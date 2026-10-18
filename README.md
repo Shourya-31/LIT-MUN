@@ -18,6 +18,17 @@ frontend/
     assets/
     components/
     pages/
+      about/
+      committees/
+      contact/
+      dashboard/
+      faq/
+      home/
+      registration/
+      resources/
+      schedule/
+      sign-in/
+      sign-up/
     styles/
   tests/
 backend/

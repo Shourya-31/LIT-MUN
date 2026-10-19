@@ -16,8 +16,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
           role="button"
           tabIndex={0}
         >
-          <div className="brand-crest">
-          </div>
           <div className="brand-text">
             <span className="brand-title">LIT-MUN</span>
             <span className="brand-subtitle">Model United Nations</span>

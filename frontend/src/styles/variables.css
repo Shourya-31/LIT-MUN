@@ -5,10 +5,25 @@
   --deep-space-blue: #172E4D;
   --lavender-grey: #8291A8;
 
+  --navy: var(--prussian-blue);
+  --gold: var(--soft-fawn);
+  --ivory: var(--soft-linen);
+  --slate-blue: var(--deep-space-blue);
+  --steel-blue: var(--lavender-grey);
+
   --bg-canvas: #0B1F3A;
   --bg-surface: #172E4D;
   --bg-surface-elevated: #132742;
   --bg-input: #0B1F3A;
+
+  --navy-dark: #071527;
+  --navy-surface: #10243F;
+  --gold-hover: #E5C383;
+  --gold-muted: rgba(212, 175, 105, 0.25);
+  --gold-glow: rgba(212, 175, 105, 0.12);
+  --ivory-muted: rgba(245, 240, 231, 0.75);
+  --border-subtle: rgba(212, 175, 105, 0.15);
+  --border-active: rgba(212, 175, 105, 0.45);
 
   --text-main: #F5F0E7;
   --text-muted: #8291A8;
@@ -20,6 +35,7 @@
   --font-heading: 'Cinzel', Georgia, serif;
   --font-subheading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Barlow Condensed', 'Oswald', 'Bebas Neue', 'Arial Narrow', sans-serif;
 
   --font-serif: var(--font-heading);
   --font-sans: var(--font-body);

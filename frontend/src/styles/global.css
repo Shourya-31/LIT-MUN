@@ -1,5 +1,8 @@
 @import './variables.css';
 
+/* Defaults belong in Tailwind's base layer so component utilities can override them. */
+@layer base {
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -87,4 +90,6 @@ h1, h2, h3, h4, h5, h6 {
 :focus-visible {
   outline: 2px solid var(--soft-fawn);
   outline-offset: 2px;
+}
+
 }

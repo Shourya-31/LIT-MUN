@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Navbar from './Component/navigation/Navbar';
 import LandingPage from './pages/landing-page/landing-page';
 import RegistrationPage from './pages/registration/RegistrationPage';
 import type { ActivePortalView } from './pages/registration/RegistrationPage';
@@ -11,9 +10,11 @@ export const App: React.FC = () => {
     <div className="litmun-app">
       {activeTab === 'landing' ? (
         <div>
-          <Navbar activeTab="landing" onSelectTab={setActiveTab} />
-          <LandingPage />
-          <div style={{ textAlign: 'center', padding: '56px 24px', backgroundColor: 'var(--prussian-blue)', borderTop: '1px solid rgba(130, 145, 168, 0.15)' }}>
+          <LandingPage onNavigateToPortal={(view) => {
+            setActiveTab(view);
+            window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+          }} />
+          <div id="register" style={{ textAlign: 'center', padding: '56px 24px', backgroundColor: 'var(--prussian-blue)', borderTop: '1px solid rgba(130, 145, 168, 0.15)', scrollMarginTop: '100px' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', color: 'var(--soft-linen)', marginBottom: '16px' }}>Ready to Represent Your Nation?</h2>
             <p style={{ color: 'var(--lavender-grey)', maxWidth: '600px', margin: '0 auto 24px', fontFamily: 'var(--font-subheading)', lineHeight: 1.6 }}>
               Join diplomats and scholars across the nation at LIT-MUN 2026. Secure your committee appointment today.

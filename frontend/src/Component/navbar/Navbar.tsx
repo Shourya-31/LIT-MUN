@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
+import './Navbar.css';
 
-export const Navbar: React.FC = () => {
-    const [isScrolled, setIsScrolled] = useState(false);
+interface NavbarProps {
+    onNavigateToPortal: (view: 'registration' | 'signin' | 'signup') => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onNavigateToPortal }) => {
+    const [isScrolled, setIsScrolled] = useState(() => typeof window !== 'undefined' && window.scrollY > 20);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
@@ -17,14 +22,22 @@ export const Navbar: React.FC = () => {
     const navLinks = [
         { label: 'Home', href: '#home' },
         { label: 'About', href: '#about' },
-        { label: 'Committees', href: '#committees' },
-        { label: 'Events', href: '#events' },
+        { label: 'Schedule', href: '#schedule' },
+        { label: 'Resources', href: '#resources' },
+        { label: 'Gallery', href: '#gallery' },
         { label: 'FAQs', href: '#faq' },
     ];
 
     return (
         <header
-            className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled
+            data-scrolled={isScrolled}
+            onKeyDown={(event) => {
+                if (event.key === 'Escape' && mobileMenuOpen) {
+                    setMobileMenuOpen(false);
+                    document.getElementById('conference-menu-toggle')?.focus();
+                }
+            }}
+            className={`litmun-section-navbar fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled
                 ? 'bg-[#0B1F3A]/90 backdrop-blur-md py-3.5 border-b border-[#D4AF69]/20 shadow-[0_4px_25px_rgba(0,0,0,0.35)]'
                 : 'bg-transparent py-5 md:py-6 border-b border-transparent'
                 }`}
@@ -48,7 +61,7 @@ export const Navbar: React.FC = () => {
                     </div>
                 </a>
 
-                <nav className="hidden md:flex items-center gap-8">
+                <nav className="hidden xl:flex items-center gap-6" aria-label="Conference sections">
                     {navLinks.map((link) => (
                         <a
                             key={link.label}
@@ -61,37 +74,48 @@ export const Navbar: React.FC = () => {
                 </nav>
 
                 <div className="flex items-center gap-4">
-                    <a
-                        href="#register"
-                        className="inline-flex items-center gap-1.5 bg-gold text-navy font-semibold text-xs md:text-sm px-4 md:px-5 py-2 md:py-2.5 rounded-full hover:brightness-110 hover:-translate-y-0.5 transition-all shadow-[0_4px_15px_rgba(212,175,105,0.25)]"
+                    <button type="button" className="hidden xl:block text-sm text-ivory hover:text-gold transition-colors" onClick={() => onNavigateToPortal('signin')}>Sign In</button>
+                    <button type="button" className="hidden xl:block text-sm text-ivory hover:text-gold transition-colors" onClick={() => onNavigateToPortal('signup')}>Sign Up</button>
+                    <button
+                        type="button"
+                        onClick={() => onNavigateToPortal('registration')}
+                        className="landing-register-button inline-flex items-center gap-1.5 bg-gold text-navy font-semibold text-xs md:text-sm px-4 md:px-5 py-2 md:py-2.5 rounded-full hover:brightness-110 hover:-translate-y-0.5 transition-all"
                     >
-                        <span>Register Now</span>
-                        <ArrowRight size={14} />
-                    </a>
+                        <span>Register</span>
+                        <ArrowRight size={14} aria-hidden="true" />
+                    </button>
 
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="md:hidden text-ivory hover:text-gold p-1 transition-colors focus:outline-none"
+                        type="button"
+                        id="conference-menu-toggle"
+                        className="xl:hidden text-ivory hover:text-gold p-2 transition-colors"
                         aria-label="Toggle navigation menu"
+                        aria-expanded={mobileMenuOpen}
+                        aria-controls="conference-mobile-menu"
                     >
-                        {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+                        {mobileMenuOpen ? <X size={26} aria-hidden="true" /> : <Menu size={26} aria-hidden="true" />}
                     </button>
                 </div>
             </div>
 
             {mobileMenuOpen && (
-                <div className="md:hidden bg-[#0B1F3A]/98 backdrop-blur-xl border-b border-[#D4AF69]/20 px-6 py-6 transition-all animate-fadeIn">
-                    <nav className="flex flex-col gap-4">
+                <div id="conference-mobile-menu" className="xl:hidden bg-[#0B1F3A]/98 backdrop-blur-xl border-b border-[#D4AF69]/20 px-6 py-6 transition-all animate-fadeIn">
+                    <nav className="flex flex-col gap-2" aria-label="Mobile conference sections">
                         {navLinks.map((link) => (
                             <a
                                 key={link.label}
                                 href={link.href}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="text-base font-medium text-ivory/90 hover:text-gold py-1 transition-colors"
+                                className="text-base font-medium text-ivory/90 hover:text-gold py-2.5 transition-colors"
                             >
                                 {link.label}
                             </a>
                         ))}
+                        <div className="flex gap-6 border-t border-gold/20 pt-3 mt-2">
+                            <button type="button" className="py-2 text-ivory hover:text-gold" onClick={() => { setMobileMenuOpen(false); onNavigateToPortal('signin'); }}>Sign In</button>
+                            <button type="button" className="py-2 text-ivory hover:text-gold" onClick={() => { setMobileMenuOpen(false); onNavigateToPortal('signup'); }}>Sign Up</button>
+                        </div>
                     </nav>
                 </div>
             )}

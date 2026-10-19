@@ -1,46 +1,21 @@
-@import './styles/variables.css';
+@import "tailwindcss";
 
-:root {
-  --navy: #0B1F3A;
-  --gold: #D4AF69;
-  --ivory: #F5F0E7;
-  --slate-blue: #172E4D;
-  --steel-blue: #8291A8;
+@theme {
+  --color-navy: #0B1F3A;
+  --color-gold: #D4AF69;
+  --color-ivory: #F5F0E7;
+  --color-slate-blue: #172E4D;
+  --color-steel-blue: #8291A8;
 
-  --text: var(--ivory);
-  --text-h: var(--gold);
-  --bg: var(--navy);
-  --border: rgba(212, 175, 105, 0.2);
-
-  --sans: var(--font-body, 'Inter', system-ui, -apple-system, sans-serif);
-  --heading: var(--font-display, 'Barlow Condensed', 'Oswald', sans-serif);
-
-  font: 16px/150% var(--sans);
-  color-scheme: dark;
-  color: var(--ivory);
-  background-color: var(--navy);
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --font-serif: 'Cinzel', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--navy);
-  color: var(--ivory);
-  overflow-x: hidden;
-}
-
-#root {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--navy);
+@layer base {
+  body {
+    background-color: var(--color-navy);
+    color: var(--color-ivory);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
 }

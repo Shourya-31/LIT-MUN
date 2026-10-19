@@ -1,5 +1,5 @@
-import { useId, useRef, useState } from 'react';
-import type { KeyboardEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
 import { ArrowUpRight, CalendarDays, ChevronDown, Coffee, Gavel, MapPin, Sparkles } from 'lucide-react';
 import SectionHeading from '../conference/SectionHeading';
 import ScrollReveal from '../animations/ScrollReveal';
@@ -27,8 +27,68 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
   const [expandedByDay, setExpandedByDay] = useState<Record<string, Record<string, boolean>>>({});
   const day = days.find((item) => item.id === selectedId) ?? days[0];
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const daysRef = useRef<HTMLDivElement>(null);
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  const programmeRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<HTMLOListElement>(null);
+  const previousPositions = useRef(new Map<string, number>());
   const hasUnconfirmedDetails = day?.events.some((event) => !event.startTime || !event.endTime || !event.venue);
   const visibleEvents = day?.events.filter((event) => category === 'all' || event.category === category) ?? [];
+
+  useLayoutEffect(() => {
+    const tabs = daysRef.current;
+    const indicator = indicatorRef.current;
+    const active = tabRefs.current.find((tab) => tab?.getAttribute('aria-selected') === 'true');
+    if (!tabs || !indicator || !active) return;
+    let disposed = false;
+    const update = () => {
+      if (disposed) return;
+      indicator.style.transform = `translateX(${active.offsetLeft}px) scaleX(${active.offsetWidth})`;
+      indicator.dataset.positioned = 'true';
+    };
+    update();
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
+    observer?.observe(tabs);
+    tabRefs.current.forEach((tab) => { if (tab) observer?.observe(tab); });
+    void document.fonts?.ready.then(update);
+    return () => { disposed = true; observer?.disconnect(); };
+  }, [day?.id, days]);
+
+  useEffect(() => {
+    const programme = programmeRef.current;
+    if (!programme || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      programme.dataset.revealed = 'true';
+      observer.disconnect();
+    }, { threshold: 0.12 });
+    observer.observe(programme);
+    return () => observer.disconnect();
+  }, [day?.id]);
+
+  useLayoutEffect(() => {
+    const previous = previousPositions.current;
+    previousPositions.current = new Map();
+    if (!previous.size || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const animations: Animation[] = [];
+    timelineRef.current?.querySelectorAll<HTMLElement>('[data-session-id]').forEach((row) => {
+      if (!row.animate) return;
+      const oldTop = previous.get(row.dataset.sessionId!);
+      const delta = oldTop === undefined ? 8 : oldTop - row.getBoundingClientRect().top;
+      animations.push(row.animate([
+        { transform: `translateY(${delta}px)`, opacity: oldTop === undefined ? 0 : 1 },
+        { transform: 'translateY(0)', opacity: 1 },
+      ], { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }));
+    });
+    return () => animations.forEach((animation) => animation.cancel());
+  }, [category, day?.id]);
+
+  function changeCategory(value: ScheduleCategory | 'all') {
+    if (value === category) return;
+    previousPositions.current = new Map(Array.from(timelineRef.current?.querySelectorAll<HTMLElement>('[data-session-id]') ?? [],
+      (row) => [row.dataset.sessionId!, row.getBoundingClientRect().top]));
+    setCategory(value);
+  }
 
   function isExpanded(eventId: string) {
     if (!day) return false;
@@ -79,8 +139,8 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
         </ScrollReveal>
 
         {day ? (
-          <div className="schedule-programme">
-            <div className="schedule-days" role="tablist" aria-label="Conference days" aria-orientation="horizontal">
+          <div ref={programmeRef} className="schedule-programme">
+            <div ref={daysRef} className="schedule-days" role="tablist" aria-label="Conference days" aria-orientation="horizontal">
               {days.map((item, index) => (
                 <button key={item.id} ref={(node) => { tabRefs.current[index] = node; }} type="button"
                   role="tab" id={`${uid}-tab-${item.id}`} aria-selected={day.id === item.id}
@@ -91,6 +151,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                   <span className="schedule-day-subtitle">{item.subtitle}</span>
                 </button>
               ))}
+              <span ref={indicatorRef} className="schedule-day-indicator" aria-hidden="true" />
             </div>
 
             <div key={day.id} id={`${uid}-panel`} role="tabpanel" aria-labelledby={`${uid}-tab-${day.id}`} tabIndex={0} className="schedule-panel">
@@ -111,7 +172,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                   {filters.map((filter) => {
                     const count = filter.value === 'all' ? day.events.length : day.events.filter((event) => event.category === filter.value).length;
                     return <button key={filter.value} type="button" data-category={filter.value}
-                      aria-pressed={category === filter.value} onClick={() => setCategory(filter.value)}
+                      aria-pressed={category === filter.value} onClick={() => changeCategory(filter.value)}
                       aria-label={`${filter.label}: ${count} ${count === 1 ? 'session' : 'sessions'}`}>
                       {filter.label}<span className="schedule-filter-count" aria-hidden="true">{count}</span>
                     </button>;
@@ -125,14 +186,15 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
 
               {visibleEvents.length ? <>
                 <div className="schedule-column-headings" aria-hidden="true"><span>Time</span><span>Sessions & venues</span></div>
-                <ol id={`${uid}-timeline`} className="schedule-timeline">
-                  {visibleEvents.map((event) => {
+                <ol ref={timelineRef} id={`${uid}-timeline`} className="schedule-timeline">
+                  {visibleEvents.map((event, index) => {
                     const { icon: Icon, label } = categories[event.category];
                     const expanded = isExpanded(event.id);
                     const triggerId = `${uid}-${day.id}-${event.id}-trigger`;
                     const detailsId = `${uid}-${day.id}-${event.id}-details`;
                     return (
-                      <li key={event.id} className={`schedule-event schedule-event--${event.category}${expanded ? ' is-expanded' : ''}`}>
+                      <li key={event.id} data-session-id={event.id} style={{ '--session-delay': `${Math.min(index, 5) * 45}ms` } as CSSProperties}
+                        className={`schedule-event schedule-event--${event.category}${expanded ? ' is-expanded' : ''}`}>
                         <div className="schedule-event-time" data-unconfirmed={!event.startTime} role="group" aria-label={`${event.title} timing`}>
                           <span className="schedule-start-time">{event.startTime || 'TBA'}</span>
                           {(event.startTime || event.endTime) && <span className="schedule-end-time">to {event.endTime || 'TBA'}</span>}
@@ -148,8 +210,8 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                             </button>
                           </h4>
                           <p className="schedule-event-venue"><MapPin size={14} aria-hidden="true" /><span className="conference-sr-only">Venue: </span>{event.venue || 'TBA'}</p>
-                          <div id={detailsId} className="schedule-event-details" role="region" aria-labelledby={triggerId} hidden={!expanded}>
-                            <p className="schedule-event-description">{event.description}</p>
+                          <div id={detailsId} className="schedule-event-details" role="region" aria-labelledby={triggerId} aria-hidden={!expanded} data-expanded={expanded}>
+                            <div className="schedule-event-details-inner"><p className="schedule-event-description">{event.description}</p></div>
                           </div>
                         </article>
                       </li>
@@ -157,7 +219,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                   })}
                 </ol>
               </> : day.events.length ? (
-                <div className="conference-empty"><CalendarDays size={32} aria-hidden="true" /><h4>No sessions in this category</h4><p>Choose another category to explore the rest of this day.</p><button type="button" className="conference-text-button" onClick={() => setCategory('all')}>Show all sessions <ArrowUpRight size={16} aria-hidden="true" /></button></div>
+                <div className="conference-empty"><CalendarDays size={32} aria-hidden="true" /><h4>No sessions in this category</h4><p>Choose another category to explore the rest of this day.</p><button type="button" className="conference-text-button" onClick={() => changeCategory('all')}>Show all sessions <ArrowUpRight size={16} aria-hidden="true" /></button></div>
               ) : <div className="conference-empty"><CalendarDays size={32} aria-hidden="true" /><h4>Sessions to be announced</h4><p>The programme for this day will appear here once it is available.</p></div>}
             </div>
 

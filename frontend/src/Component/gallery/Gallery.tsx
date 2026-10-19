@@ -1,4 +1,4 @@
-import { useCallback, useId, useRef, useState } from 'react';
+import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, TouchEvent } from 'react';
 import { ChevronDown, ChevronUp, ImageOff, Images, Maximize2 } from 'lucide-react';
 import SectionHeading from '../conference/SectionHeading';
@@ -11,36 +11,54 @@ import './Gallery.css';
 
 function StackPhoto({ image }: { image: GalleryImage }) {
   const [failed, setFailed] = useState(false);
-  return failed ? (
+  return <span className="gallery-stack-photo">{failed ? (
     <span className="gallery-stack-error"><ImageOff size={32} aria-hidden="true" /><span>Photograph unavailable</span></span>
   ) : (
     <img src={image.thumbnailSrc || image.src} srcSet={image.thumbnailSrcSet}
       sizes="(max-width: 760px) calc(100vw - 100px), (max-width: 1264px) 45vw, 480px"
       alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" onError={() => setFailed(true)} />
-  );
+  )}</span>;
 }
 
 export default function Gallery({ images = galleryImages }: GalleryProps) {
   const uid = useId();
-  const [selectedId, setSelectedId] = useState(images[0]?.id ?? '');
+  const [selection, setSelection] = useState({ id: images[0]?.id ?? '', fromId: '', direction: 1, revision: 0 });
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [overviewOpen, setOverviewOpen] = useState(false);
   const touchStartY = useRef<number | null>(null);
-  const selectedIndex = Math.max(0, images.findIndex((image) => image.id === selectedId));
+  const currentCardRef = useRef<HTMLButtonElement>(null);
+  const selectedIndex = Math.max(0, images.findIndex((image) => image.id === selection.id));
   const selected = images[selectedIndex];
+  const departing = images.find((image) => image.id === selection.fromId);
   const closeLightbox = useCallback(() => setExpandedId(null), []);
+
+  useLayoutEffect(() => {
+    const card = currentCardRef.current;
+    if (!selection.fromId || !card?.animate || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const animation = card.animate([
+      { transform: `translateY(${selection.direction * 27}px) rotate(${selection.direction * 5}deg) scale(0.96)`, opacity: 0.65 },
+      { transform: 'translateY(0) rotate(0deg) scale(1)', opacity: 1 },
+    ], { duration: 280, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+    return () => animation.cancel();
+  }, [selection]);
+
+  function selectPhoto(id: string, direction = 1, animate = true) {
+    if (id === selected?.id) return;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    setSelection((previous) => ({ id, fromId: animate && !reducedMotion ? selected?.id ?? '' : '', direction, revision: previous.revision + 1 }));
+  }
 
   function move(direction: number) {
     if (images.length < 2) return;
-    setSelectedId(images[(selectedIndex + direction + images.length) % images.length].id);
+    selectPhoto(images[(selectedIndex + direction + images.length) % images.length].id, direction);
   }
 
   function onStackKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (!images.length) return;
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') { event.preventDefault(); move(1); }
     else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
-    else if (event.key === 'Home') { event.preventDefault(); setSelectedId(images[0].id); }
-    else if (event.key === 'End') { event.preventDefault(); setSelectedId(images[images.length - 1].id); }
+    else if (event.key === 'Home') { event.preventDefault(); selectPhoto(images[0].id, -1); }
+    else if (event.key === 'End') { event.preventDefault(); selectPhoto(images[images.length - 1].id); }
   }
 
   function onSwipeEnd(event: TouchEvent<HTMLDivElement>) {
@@ -65,7 +83,7 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
         </ScrollReveal>
 
         {selected ? (
-          <div className="gallery-feature">
+          <div className="gallery-feature" data-direction={selection.direction < 0 ? 'previous' : 'next'}>
             <div className="gallery-feature-tools">
               <button type="button" className="gallery-view-all" aria-haspopup="dialog" onClick={() => setOverviewOpen(true)}>
                 <Images size={17} aria-hidden="true" />View full gallery
@@ -78,7 +96,11 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
                   {neighbours.map(({ image, position }) => (
                     <div key={image.id} className={`gallery-stack-card gallery-stack-card--${position}`} aria-hidden="true"><StackPhoto image={image} /></div>
                   ))}
-                  <button type="button" className="gallery-stack-card gallery-stack-card--current"
+                  {departing && <div key={`departing-${selection.revision}`} className="gallery-stack-card gallery-stack-card--departing" aria-hidden="true"
+                    onAnimationEnd={(event) => {
+                      if (event.target === event.currentTarget) setSelection((previous) => ({ ...previous, fromId: '' }));
+                    }}><StackPhoto image={departing} /></div>}
+                  <button ref={currentCardRef} type="button" className="gallery-stack-card gallery-stack-card--current"
                     aria-label={`Expand photograph: ${selected.caption || selected.alt}`} aria-describedby={`${uid}-caption`} aria-haspopup="dialog"
                     onClick={() => setExpandedId(selected.id)}>
                     <StackPhoto key={selected.id} image={selected} />
@@ -98,6 +120,10 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
                 <p className="gallery-feature-eyebrow">LIT-MUN / In focus</p>
                 <h3>Every dialogue<br />leaves a memory.</h3>
                 <div className="gallery-current-caption" aria-live="polite" aria-atomic="true">
+                  {departing && <div key={`caption-${selection.revision}`} className="gallery-caption-departing" aria-hidden="true">
+                    <p className="gallery-current-category">{[departing.category, departing.year].filter(Boolean).join(' · ') || 'LIT-MUN'}</p>
+                    <p>{departing.caption || departing.alt}</p>
+                  </div>}
                   <div key={selected.id} className="gallery-caption-content">
                     <p className="gallery-current-category">{[selected.category, selected.year].filter(Boolean).join(' · ') || 'LIT-MUN'}</p>
                     <p id={`${uid}-caption`} className="gallery-caption-text">{selected.caption || selected.alt}</p>
@@ -113,9 +139,9 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
       </div>
 
       {overviewOpen && <GalleryOverview images={images} selectedId={selected?.id} onClose={() => setOverviewOpen(false)}
-        onSelect={(id) => { setSelectedId(id); setExpandedId(id); }} />}
+        onSelect={(id) => { selectPhoto(id, 1, false); setExpandedId(id); }} />}
       {expandedId && images.some((image) => image.id === expandedId) && <GalleryLightbox images={images} imageId={expandedId}
-        onSelect={(id) => { setExpandedId(id); setSelectedId(id); }} onClose={closeLightbox} />}
+        onSelect={(id) => { setExpandedId(id); selectPhoto(id, 1, false); }} onClose={closeLightbox} />}
     </section>
   );
 }

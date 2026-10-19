@@ -1,11 +1,11 @@
 .schedule-section { background: var(--navy); border-top: 1px solid var(--border-subtle); }
 .schedule-programme { --schedule-time-width: 130px; --schedule-column-gap: 20px; --schedule-marker-offset: 44px; overflow: hidden; background: #0d233e; border: 1px solid var(--border-active); border-radius: 5px; }
-.schedule-days { display: flex; align-items: stretch; gap: 36px; padding-inline: 36px; overflow-x: auto; border-bottom: 1px solid var(--border-subtle); }
+.schedule-days { position: relative; display: flex; align-items: stretch; gap: 36px; padding-inline: 36px; overflow-x: auto; border-bottom: 1px solid var(--border-subtle); }
 .schedule-day { position: relative; flex: 0 0 auto; min-width: 132px; padding: 20px 0 18px; color: #becbdb; text-align: left; transition: color 180ms; }
-.schedule-day::after { content: ''; position: absolute; inset-inline: 0; bottom: 0; height: 2px; background: transparent; transition: background 180ms; }
+.schedule-day-indicator { position: absolute; left: 0; bottom: 0; width: 1px; height: 2px; background: var(--gold); transform: scaleX(0); transform-origin: left; pointer-events: none; }
+.schedule-day-indicator[data-positioned='true'] { transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1); }
 .schedule-day:hover { color: var(--ivory); }
 .schedule-day.is-selected { color: var(--gold); }
-.schedule-day.is-selected::after { background: var(--gold); }
 .schedule-day:focus-visible { outline-offset: -4px; }
 .schedule-day-label { display: block; font: 600 0.95rem/1.5 var(--font-subheading); }
 .schedule-day-subtitle { display: block; margin-top: 5px; font-size: 0.72rem; line-height: 1.6; color: #b6c5d7; }
@@ -32,6 +32,10 @@
 .schedule-timeline { position: relative; list-style: none; margin: 0; padding: 0; }
 .schedule-event { position: relative; display: grid; grid-template-columns: var(--schedule-time-width) 32px minmax(0, 1fr); column-gap: var(--schedule-column-gap); padding-block: 28px; }
 .schedule-event:not(:last-child)::before { content: ''; position: absolute; top: var(--schedule-marker-offset); bottom: calc(-1 * var(--schedule-marker-offset)); left: calc(var(--schedule-time-width) + var(--schedule-column-gap) + 16px); width: 1px; background: rgba(212, 175, 105, 0.3); }
+.schedule-programme[data-revealed='true'] .schedule-event::before { transform-origin: top; animation: schedule-line-in 340ms ease-out var(--session-delay, 0ms) backwards; }
+.schedule-programme[data-revealed='true'] .schedule-marker { animation: schedule-marker-in 240ms ease-out var(--session-delay, 0ms) backwards; }
+@keyframes schedule-line-in { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes schedule-marker-in { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
 .schedule-event + .schedule-event { border-top: 1px solid rgba(130, 145, 168, 0.16); }
 .schedule-event-time { padding-top: 1px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .schedule-start-time { display: block; color: var(--ivory); font: 500 clamp(1.1rem, 2vw, 1.5rem)/1.4 var(--font-body); letter-spacing: -0.035em; }
@@ -46,8 +50,9 @@
 .schedule-session-action { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0; padding-top: 4px; color: #b6c5d7; font: 500 0.67rem/1.6 var(--font-body); letter-spacing: 0; }
 .schedule-event.is-expanded .schedule-session-action { color: var(--gold); }
 .schedule-event.is-expanded .schedule-marker { border-color: var(--gold); }
-.schedule-event-details[hidden] { display: none; }
-.schedule-event-details:not([hidden]) { animation: conference-enter 180ms ease-out; }
+.schedule-event-details { display: grid; grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows 260ms ease, opacity 180ms ease, visibility 0s 260ms; }
+.schedule-event-details[data-expanded='true'] { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition-delay: 0s; }
+.schedule-event-details-inner { min-height: 0; overflow: hidden; }
 .schedule-event-description { max-width: 660px; margin-top: 10px; color: #c0ccdc; font-size: 0.84rem; line-height: 1.85; }
 .schedule-event-venue { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: #afbed1; font-size: 0.73rem; line-height: 1.6; overflow-wrap: anywhere; }
 .schedule-event-venue svg { flex-shrink: 0; color: #c6ae7f; }

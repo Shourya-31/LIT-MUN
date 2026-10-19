@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { ImageOff, Maximize2, X } from 'lucide-react';
 import useGalleryDialog from './useGalleryDialog';
@@ -11,14 +12,15 @@ interface GalleryOverviewProps {
   onClose: () => void;
 }
 
-function OverviewPhoto({ image, selected, onSelect }: {
+function OverviewPhoto({ image, index, selected, onSelect }: {
   image: GalleryImage;
+  index: number;
   selected: boolean;
   onSelect: (id: string) => void;
 }) {
   const [failed, setFailed] = useState(false);
   return (
-    <li>
+    <li style={{ '--gallery-delay': `${Math.min(index, 5) * 30}ms` } as CSSProperties}>
       <button type="button" className="gallery-overview-tile" aria-current={selected ? 'true' : undefined}
         aria-label={`Expand photograph: ${image.caption || image.alt}`} aria-haspopup="dialog" onClick={() => onSelect(image.id)}>
         <span className="gallery-overview-image">
@@ -48,7 +50,7 @@ export default function GalleryOverview({ images, selectedId, onSelect, onClose 
         <button type="button" className="gallery-overview-close" onClick={onClose} aria-label="Close full gallery"><X size={24} aria-hidden="true" /></button>
       </header>
       <ul className="gallery-overview-grid">
-        {images.map((image) => <OverviewPhoto key={`${image.id}-${image.src}`} image={image} selected={selectedId === image.id} onSelect={onSelect} />)}
+        {images.map((image, index) => <OverviewPhoto key={`${image.id}-${image.src}`} image={image} index={index} selected={selectedId === image.id} onSelect={onSelect} />)}
       </ul>
     </dialog>, document.body,
   );

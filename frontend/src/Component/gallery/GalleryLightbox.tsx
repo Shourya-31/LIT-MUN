@@ -15,7 +15,7 @@ function LightboxPhoto({ image }: { image: GalleryImage }) {
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   return (
-    <div className="gallery-lightbox-photo">
+    <div className="gallery-lightbox-photo" data-ready={!loading}>
       {failed ? <div className="gallery-photo-error" role="status"><ImageOff size={38} aria-hidden="true" /><p>This photograph could not be loaded.</p><span>You can still browse the rest of the gallery.</span></div> : <>
         {loading && <span className="gallery-loading" role="status">Loading photograph…</span>}
         <img src={image.src} alt={image.alt} width={image.width} height={image.height} decoding="async" onLoad={() => setLoading(false)} onError={() => { setFailed(true); setLoading(false); }} />

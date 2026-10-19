@@ -29,6 +29,14 @@ rendered on the home page; the portal keeps its existing navigation and footer.
   sessions. A filter with no matches offers Show all sessions to reset it.
   Disclosure buttons support native keyboard interaction, ARIA expanded states,
   and reduced-motion settings. Nothing is saved to an account or database.
+
+  The gold day indicator slides between tabs and updates its position when the
+  layout or fonts change. Descriptions expand and collapse with a short CSS grid
+  transition; collapsed descriptions are hidden from assistive technology.
+  Category changes animate retained rows from their previous positions using the
+  browser's Web Animations API, with immediate updates when motion is reduced or
+  that API is unavailable. Timeline lines and markers reveal when the programme
+  first enters view. Observers and interrupted animations are cleaned up.
 - **Resources:** edit `src/Component/resources/resourceData.ts`. All initial
   entries are unpublished. Put approved documents in `public/resources/` and use
   root-relative URLs such as `/resources/delegate-handbook.pdf`. Set
@@ -53,6 +61,17 @@ rendered on the home page; the portal keeps its existing navigation and footer.
   current photo's category and caption beneath it. Up/down buttons, arrow keys,
   Home/End, and vertical touch swipes shuffle the stack. Portraits and landscapes
   are shown without cropping. On small screens the caption follows the photo.
+  Stack, overview, and enlarged images are centered inside explicitly bounded
+  image viewports with `object-fit: contain`. Their intrinsic dimensions cannot
+  stretch the viewer's grid tracks beyond the available space. Space around a
+  portrait or landscape is retained instead of trimming any part of the photo.
+
+  Shuffling briefly moves the incoming card forward while the previous card and
+  caption fade away. The focused photo button stays mounted, and rapid navigation
+  cancels the previous animation. The full-gallery dialog has a subtle entrance
+  and a capped thumbnail stagger; enlarged photographs fade in after loading.
+  Reduced-motion preferences disable these effects. There are no animation
+  timers, continuous loops, added animation packages, or full-image preloads.
 
   **View full gallery**, in the card's top-right corner, opens all 17 photographs
   together in a responsive grid with individual captions. Any thumbnail opens
@@ -160,14 +179,21 @@ the new section animations.
 - Full-project lint reports an existing error at
   `src/pages/registration/RegistrationPage.tsx:23` (`react-hooks/set-state-in-effect`)
   and a missing effect dependency warning at line 25. That file is unchanged.
-- 18 current gallery interaction checks pass with the actual 17-image dataset:
+- 22 current gallery interaction checks pass with the actual 17-image dataset:
   stack navigation, synchronized captions, arrow/Home/End keys, vertical swipes,
   full-gallery browsing, enlarged-photo navigation, nested dialog cleanup, focus
-  restoration, image errors, and one/two/zero-photo collection handling.
-- 19 interactive schedule checks pass: horizontal day tabs, keyboard navigation,
+  restoration, image errors, one/two/zero-photo collection handling, rapid shuffle
+  cancellation, outgoing-caption cleanup, reduced motion, and loading behavior.
+- 23 interactive schedule checks pass: horizontal day tabs, keyboard navigation,
   ARIA references, category filters and counts, individual and bulk disclosure
   controls, per-day expansion state, empty-filter reset, the single TBA notice,
-  confirmed/partially unconfirmed details, and empty programmes.
+  confirmed/partially unconfirmed details, empty programmes, moving day indicator,
+  filtered-row animation positions, reduced motion, and animation cleanup.
+- The animation changes add 5,750 raw bytes (1,611 bytes with gzip) to the combined
+  production JavaScript and CSS compared with the preceding build. This measures
+  bundle size, not page-load time on a real device. Image assets and dependency
+  manifests are unchanged; responsive previews remain lazy-loaded and full-size
+  photographs are requested only when the enlarged viewer opens.
 - All 51 WebP assets decode, have matching paths/dimensions, and preserve source
   proportions within pixel rounding. The Vite build manifest confirms that all
   51 imported images are emitted with fingerprinted filenames, byte-identical

@@ -2,8 +2,8 @@ import React from 'react';
 import './Navbar.css';
 
 export interface NavbarProps {
-  activeTab: 'registration' | 'signin' | 'signup';
-  onSelectTab: (tab: 'registration' | 'signin' | 'signup') => void;
+  activeTab: 'landing' | 'registration' | 'signin' | 'signup';
+  onSelectTab: (tab: 'landing' | 'registration' | 'signin' | 'signup') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
@@ -12,7 +12,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
       <div className="navbar-container">
         <div
           className="navbar-brand"
-          onClick={() => onSelectTab('registration')}
+          onClick={() => onSelectTab('landing')}
           role="button"
           tabIndex={0}
         >
@@ -23,6 +23,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
         </div>
 
         <nav className="navbar-nav" aria-label="Main Navigation">
+          <button
+            type="button"
+            className={`nav-link ${activeTab === 'landing' ? 'active' : ''}`}
+            onClick={() => onSelectTab('landing')}
+          >
+            Home
+          </button>
           <button
             type="button"
             className={`nav-link ${activeTab === 'registration' ? 'active' : ''}`}

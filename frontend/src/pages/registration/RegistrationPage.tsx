@@ -7,14 +7,32 @@ import './RegistrationPage.css';
 
 export type ActivePortalView = 'registration' | 'signin' | 'signup';
 
-export const RegistrationPage: React.FC = () => {
-  const [activeView, setActiveView] = useState<ActivePortalView>('registration');
+export interface RegistrationPageProps {
+  initialView?: ActivePortalView;
+  onNavigateToHome?: () => void;
+}
+
+export const RegistrationPage: React.FC<RegistrationPageProps> = ({
+  initialView = 'registration',
+  onNavigateToHome,
+}) => {
+  const [activeView, setActiveView] = useState<ActivePortalView>(initialView);
+
+  React.useEffect(() => {
+    if (initialView && initialView !== activeView) {
+      setActiveView(initialView);
+    }
+  }, [initialView]);
 
   return (
     <div className="registration-page">
       <Navbar
         activeTab={activeView}
         onSelectTab={(tab) => {
+          if (tab === 'landing') {
+            if (onNavigateToHome) onNavigateToHome();
+            return;
+          }
           setActiveView(tab);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}

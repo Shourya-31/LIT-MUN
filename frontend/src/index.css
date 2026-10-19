@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0B1F3A;
+  --color-gold: #D4AF69;
+  --color-ivory: #F5F0E7;
+  --color-slate-blue: #172E4D;
+  --color-steel-blue: #8291A8;
+
+  --font-serif: 'Cinzel', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-navy);
+    color: var(--color-ivory);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+}

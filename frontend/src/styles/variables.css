@@ -1,0 +1,21 @@
+:root {
+  --navy: #0B1F3A;
+  --gold: #D4AF69;
+  --ivory: #F5F0E7;
+  --slate-blue: #172E4D;
+  --steel-blue: #8291A8;
+
+  /* Supplemental brand tokens */
+  --navy-dark: #071527;
+  --navy-surface: #10243F;
+  --gold-hover: #E5C383;
+  --gold-muted: rgba(212, 175, 105, 0.25);
+  --gold-glow: rgba(212, 175, 105, 0.12);
+  --ivory-muted: rgba(245, 240, 231, 0.75);
+  --border-subtle: rgba(212, 175, 105, 0.15);
+  --border-active: rgba(212, 175, 105, 0.45);
+
+  /* Typography tokens */
+  --font-display: 'Barlow Condensed', 'Oswald', 'Bebas Neue', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}

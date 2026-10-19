@@ -35,8 +35,12 @@ rendered on the home page; the portal keeps its existing navigation and footer.
   transition; collapsed descriptions are hidden from assistive technology.
   Category changes animate retained rows from their previous positions using the
   browser's Web Animations API, with immediate updates when motion is reduced or
-  that API is unavailable. Timeline lines and markers reveal when the programme
-  first enters view. Observers and interrupted animations are cleaned up.
+  that API is unavailable. Each session reveals once as it enters view with a
+  20 px upward fade over 500 ms and a 90 ms stagger capped at 270 ms. Its gold
+  line and marker reveal in sync. Desktop hover lifts the actionable session
+  content by 4 px over 250 ms, with a subtle shadow and brighter marker accent.
+  Day changes fade the panel over 340 ms. Observers and interrupted animations
+  are cleaned up.
 - **Resources:** edit `src/Component/resources/resourceData.ts`. All initial
   entries are unpublished. Put approved documents in `public/resources/` and use
   root-relative URLs such as `/resources/delegate-handbook.pdf`. Set
@@ -68,10 +72,29 @@ rendered on the home page; the portal keeps its existing navigation and footer.
 
   Shuffling briefly moves the incoming card forward while the previous card and
   caption fade away. The focused photo button stays mounted, and rapid navigation
-  cancels the previous animation. The full-gallery dialog has a subtle entrance
-  and a capped thumbnail stagger; enlarged photographs fade in after loading.
-  Reduced-motion preferences disable these effects. There are no animation
-  timers, continuous loops, added animation packages, or full-image preloads.
+  cancels the previous animation. Stack and overview photos reveal once on entry
+  with a 96%-to-100% scale and fade over 580 ms; overview tiles use a 70 ms stagger
+  capped at 210 ms. Desktop hover enlarges photographs from 96% to 100% of their
+  fitted bounds over 400 ms, preserving the complete image. A subtle gradient
+  supports the overview's animated caption/category overlay; the original full
+  captions stay visible beneath each image, including on touch screens.
+
+  The overview and lightbox backdrop fade in over 300 ms. Enlarged photographs
+  enter from 95% scale with a small directional shift over 400 ms after loading.
+  Captions and controls fade upward over 350 ms. Both dialogs fade out over
+  200 ms before unmounting, unlocking page scrolling, and restoring focus;
+  nested dialogs retain their scroll lock until the final dialog closes.
+  Repeated close requests are ignored, and unmounting cancels pending exits.
+  Reduced-motion preferences disable these effects and close dialogs immediately.
+  There are no animation timers, continuous loops, added animation packages,
+  or full-image preloads.
+
+  Schedule and gallery headings use a 24 px upward fade lasting 600 ms, with the
+  supporting description delayed by 100 ms. The shared `useScrollEntrance` hook
+  uses one IntersectionObserver per container, stops observing revealed targets,
+  reveals keyboard-focused targets immediately, and releases all observers and
+  listeners on cleanup. Missing browser APIs leave content visible. Resources
+  and the rest of the landing page retain their existing reveal behavior.
 
   **View full gallery**, in the card's top-right corner, opens all 17 photographs
   together in a responsive grid with individual captions. Any thumbnail opens
@@ -114,6 +137,7 @@ Created:
 CONFERENCE-SECTIONS.md
 src/Component/conference/SectionHeading.tsx
 src/Component/conference/conference.css
+src/Component/animations/useScrollEntrance.ts
 src/Component/schedule/Schedule.tsx
 src/Component/schedule/Schedule.css
 src/Component/schedule/scheduleData.ts
@@ -179,18 +203,23 @@ the new section animations.
 - Full-project lint reports an existing error at
   `src/pages/registration/RegistrationPage.tsx:23` (`react-hooks/set-state-in-effect`)
   and a missing effect dependency warning at line 25. That file is unchanged.
-- 22 current gallery interaction checks pass with the actual 17-image dataset:
+- 26 current gallery interaction checks pass with the actual 17-image dataset:
   stack navigation, synchronized captions, arrow/Home/End keys, vertical swipes,
   full-gallery browsing, enlarged-photo navigation, nested dialog cleanup, focus
   restoration, image errors, one/two/zero-photo collection handling, rapid shuffle
-  cancellation, outgoing-caption cleanup, reduced motion, and loading behavior.
+  cancellation, outgoing-caption cleanup, reduced motion, loading behavior,
+  directional navigation, delayed exit/focus restoration, nested animated exits,
+  and cancellation while unmounting.
 - 23 interactive schedule checks pass: horizontal day tabs, keyboard navigation,
   ARIA references, category filters and counts, individual and bulk disclosure
   controls, per-day expansion state, empty-filter reset, the single TBA notice,
   confirmed/partially unconfirmed details, empty programmes, moving day indicator,
   filtered-row animation positions, reduced motion, and animation cleanup.
-- The animation changes add 5,750 raw bytes (1,611 bytes with gzip) to the combined
-  production JavaScript and CSS compared with the preceding build. This measures
+- Eight scroll-entrance lifecycle checks pass: observer reuse, revealing only
+  intersecting targets, no replay, keyboard focus, content changes, runtime and
+  initial reduced motion, unavailable-API fallback, and cleanup.
+- The latest animation enhancement adds about 1.5 KB with gzip to the combined
+  production JavaScript and CSS compared with commit `3b150dc`. This measures
   bundle size, not page-load time on a real device. Image assets and dependency
   manifests are unchanged; responsive previews remain lazy-loaded and full-size
   photographs are requested only when the enlarged viewer opens.

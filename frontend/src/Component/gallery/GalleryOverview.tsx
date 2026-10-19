@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { ImageOff, Maximize2, X } from 'lucide-react';
 import useGalleryDialog from './useGalleryDialog';
+import useScrollEntrance from '../animations/useScrollEntrance';
 import type { GalleryImage } from './types';
 
 interface GalleryOverviewProps {
@@ -20,7 +21,7 @@ function OverviewPhoto({ image, index, selected, onSelect }: {
 }) {
   const [failed, setFailed] = useState(false);
   return (
-    <li style={{ '--gallery-delay': `${Math.min(index, 5) * 30}ms` } as CSSProperties}>
+    <li data-entrance="photo" style={{ '--gallery-delay': `${(index % 4) * 70}ms` } as CSSProperties}>
       <button type="button" className="gallery-overview-tile" aria-current={selected ? 'true' : undefined}
         aria-label={`Expand photograph: ${image.caption || image.alt}`} aria-haspopup="dialog" onClick={() => onSelect(image.id)}>
         <span className="gallery-overview-image">
@@ -30,6 +31,7 @@ function OverviewPhoto({ image, index, selected, onSelect }: {
               alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" onError={() => setFailed(true)} />
           )}
           <span className="gallery-overview-expand"><Maximize2 size={17} aria-hidden="true" /></span>
+          <span className="gallery-hover-caption" aria-hidden="true"><span>{image.category || 'LIT-MUN'}</span><span>{image.caption || image.alt}</span></span>
         </span>
         <span className="gallery-overview-category">{image.category || 'LIT-MUN'}</span>
         <span className="gallery-overview-caption">{image.caption || image.alt}</span>
@@ -40,17 +42,19 @@ function OverviewPhoto({ image, index, selected, onSelect }: {
 
 export default function GalleryOverview({ images, selectedId, onSelect, onClose }: GalleryOverviewProps) {
   const uid = useId();
-  const dialogRef = useGalleryDialog();
+  const { dialogRef, requestClose } = useGalleryDialog(onClose);
+  const gridRef = useScrollEntrance<HTMLUListElement>();
 
   return createPortal(
     <dialog ref={dialogRef} className="gallery-overview" aria-labelledby={`${uid}-title`}
-      onCancel={(event) => { event.preventDefault(); onClose(); }}>
+      onCancel={(event) => { event.preventDefault(); requestClose(); }}>
       <header className="gallery-overview-header">
         <div><p className="gallery-overview-eyebrow">LIT-MUN / In focus</p><h2 id={`${uid}-title`}>The full gallery</h2><p className="gallery-overview-count">{images.length} photographs. Choose a moment to see it up close.</p></div>
-        <button type="button" className="gallery-overview-close" onClick={onClose} aria-label="Close full gallery"><X size={24} aria-hidden="true" /></button>
+        <button type="button" className="gallery-overview-close" onClick={requestClose} aria-label="Close full gallery"><X size={24} aria-hidden="true" /></button>
       </header>
-      <ul className="gallery-overview-grid">
-        {images.map((image, index) => <OverviewPhoto key={`${image.id}-${image.src}`} image={image} index={index} selected={selectedId === image.id} onSelect={onSelect} />)}
+      <ul ref={gridRef} className="gallery-overview-grid">
+        {images.map((image, index) => <OverviewPhoto key={`${image.id}-${image.src}`} image={image} index={index} selected={selectedId === image.id}
+          onSelect={(id) => { if (dialogRef.current?.dataset.closing !== 'true') onSelect(id); }} />)}
       </ul>
     </dialog>, document.body,
   );

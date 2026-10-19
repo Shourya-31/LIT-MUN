@@ -1,8 +1,8 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { ArrowUpRight, CalendarDays, ChevronDown, Coffee, Gavel, MapPin, Sparkles } from 'lucide-react';
 import SectionHeading from '../conference/SectionHeading';
-import ScrollReveal from '../animations/ScrollReveal';
+import useScrollEntrance from '../animations/useScrollEntrance';
 import { scheduleDays } from './scheduleData';
 import type { ScheduleCategory, ScheduleProps } from './types';
 import './Schedule.css';
@@ -29,11 +29,11 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const daysRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
-  const programmeRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLOListElement>(null);
   const previousPositions = useRef(new Map<string, number>());
   const hasUnconfirmedDetails = day?.events.some((event) => !event.startTime || !event.endTime || !event.venue);
   const visibleEvents = day?.events.filter((event) => category === 'all' || event.category === category) ?? [];
+  const sectionRef = useScrollEntrance<HTMLElement>(`${day?.id ?? ''}-${category}`);
 
   useLayoutEffect(() => {
     const tabs = daysRef.current;
@@ -53,18 +53,6 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
     void document.fonts?.ready.then(update);
     return () => { disposed = true; observer?.disconnect(); };
   }, [day?.id, days]);
-
-  useEffect(() => {
-    const programme = programmeRef.current;
-    if (!programme || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      programme.dataset.revealed = 'true';
-      observer.disconnect();
-    }, { threshold: 0.12 });
-    observer.observe(programme);
-    return () => observer.disconnect();
-  }, [day?.id]);
 
   useLayoutEffect(() => {
     const previous = previousPositions.current;
@@ -130,16 +118,16 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
   }
 
   return (
-    <section id="schedule" className="conference-section schedule-section" aria-labelledby={`${uid}-heading`}>
+    <section ref={sectionRef} id="schedule" className="conference-section schedule-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
-        <ScrollReveal className="conference-reveal">
+        <div data-entrance="heading">
           <SectionHeading id={`${uid}-heading`} number="01" eyebrow="The conference programme"
             title={<>Conference <em>Schedule</em></>}
             description="From the first exchange of ideas to a shared resolution. Explore the rhythm of the conference." />
-        </ScrollReveal>
+        </div>
 
         {day ? (
-          <div ref={programmeRef} className="schedule-programme">
+          <div className="schedule-programme">
             <div ref={daysRef} className="schedule-days" role="tablist" aria-label="Conference days" aria-orientation="horizontal">
               {days.map((item, index) => (
                 <button key={item.id} ref={(node) => { tabRefs.current[index] = node; }} type="button"
@@ -193,7 +181,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                     const triggerId = `${uid}-${day.id}-${event.id}-trigger`;
                     const detailsId = `${uid}-${day.id}-${event.id}-details`;
                     return (
-                      <li key={event.id} data-session-id={event.id} style={{ '--session-delay': `${Math.min(index, 5) * 45}ms` } as CSSProperties}
+                      <li key={event.id} data-session-id={event.id} data-entrance="session" style={{ '--session-delay': `${Math.min(index, 3) * 90}ms` } as CSSProperties}
                         className={`schedule-event schedule-event--${event.category}${expanded ? ' is-expanded' : ''}`}>
                         <div className="schedule-event-time" data-unconfirmed={!event.startTime} role="group" aria-label={`${event.title} timing`}>
                           <span className="schedule-start-time">{event.startTime || 'TBA'}</span>

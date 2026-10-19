@@ -2,7 +2,7 @@ import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, TouchEvent } from 'react';
 import { ChevronDown, ChevronUp, ImageOff, Images, Maximize2 } from 'lucide-react';
 import SectionHeading from '../conference/SectionHeading';
-import ScrollReveal from '../animations/ScrollReveal';
+import useScrollEntrance from '../animations/useScrollEntrance';
 import GalleryLightbox from './GalleryLightbox';
 import GalleryOverview from './GalleryOverview';
 import { galleryImages } from './galleryData';
@@ -22,6 +22,7 @@ function StackPhoto({ image }: { image: GalleryImage }) {
 
 export default function Gallery({ images = galleryImages }: GalleryProps) {
   const uid = useId();
+  const sectionRef = useScrollEntrance<HTMLElement>();
   const [selection, setSelection] = useState({ id: images[0]?.id ?? '', fromId: '', direction: 1, revision: 0 });
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [overviewOpen, setOverviewOpen] = useState(false);
@@ -74,13 +75,13 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
   ] : [];
 
   return (
-    <section id="gallery" className="conference-section gallery-section" aria-labelledby={`${uid}-heading`}>
+    <section ref={sectionRef} id="gallery" className="conference-section gallery-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
-        <ScrollReveal className="conference-reveal">
+        <div data-entrance="heading">
           <SectionHeading id={`${uid}-heading`} number="03" eyebrow="Beyond the debate"
             title={<>Moments that<br /><em>make the conference.</em></>}
             description="The exchanges, the connections, the shared sense of purpose. LIT-MUN's story, one photograph at a time." />
-        </ScrollReveal>
+        </div>
 
         {selected ? (
           <div className="gallery-feature" data-direction={selection.direction < 0 ? 'previous' : 'next'}>
@@ -90,7 +91,7 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
               </button>
             </div>
             <div className="gallery-feature-body">
-              <div className="gallery-stack" role="group" aria-label="Photograph stack" onKeyDown={onStackKeyDown}>
+              <div className="gallery-stack" data-entrance="photo" role="group" aria-label="Photograph stack" onKeyDown={onStackKeyDown}>
                 <div className="gallery-stack-stage" onTouchStart={(event) => { touchStartY.current = event.touches[0]?.clientY ?? null; }}
                   onTouchEnd={onSwipeEnd} onTouchCancel={() => { touchStartY.current = null; }}>
                   {neighbours.map(({ image, position }) => (
@@ -116,7 +117,7 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
                 </div>
               </div>
 
-              <div className="gallery-feature-copy">
+              <div className="gallery-feature-copy" data-entrance="copy">
                 <p className="gallery-feature-eyebrow">LIT-MUN / In focus</p>
                 <h3>Every dialogue<br />leaves a memory.</h3>
                 <div className="gallery-current-caption" aria-live="polite" aria-atomic="true">

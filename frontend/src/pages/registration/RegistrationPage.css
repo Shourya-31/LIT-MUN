@@ -15,7 +15,7 @@
 .portal-hero {
   padding: 64px 24px 44px;
   background-color: var(--prussian-blue);
-  border-bottom: 1px solid rgba(130, 145, 168, 0.15);
+  border-bottom: 1px solid rgba(212, 175, 105, 0.25);
 }
 
 .portal-hero-content {
@@ -28,10 +28,11 @@
   font-family: var(--font-heading);
   font-size: 2.85rem;
   font-weight: 700;
-  color: var(--soft-linen);
+  color: var(--soft-fawn);
   letter-spacing: 0.03em;
   line-height: 1.2;
   margin-bottom: 16px;
+  text-shadow: 0 0 30px rgba(212, 175, 105, 0.15);
 }
 
 .portal-lead {
@@ -60,6 +61,12 @@
   flex-direction: column;
   gap: 6px;
   box-shadow: 0 4px 16px rgba(3, 10, 20, 0.25);
+  border-left: 3px solid var(--soft-fawn);
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+.spec-card:hover {
+  box-shadow: 0 4px 20px rgba(212, 175, 105, 0.12);
 }
 
 .spec-label {
@@ -112,6 +119,7 @@
   max-width: 580px;
   margin-left: auto;
   margin-right: auto;
+  border: 1px solid rgba(212, 175, 105, 0.15);
 }
 
 .view-tab-button {
@@ -133,6 +141,7 @@
 .view-tab-button.selected {
   background-color: var(--prussian-blue);
   color: var(--soft-fawn);
+  box-shadow: 0 0 12px rgba(212, 175, 105, 0.1);
 }
 
 .portal-active-view {
@@ -152,7 +161,7 @@
 
 .portal-footer {
   background-color: var(--prussian-blue);
-  border-top: 1px solid rgba(130, 145, 168, 0.2);
+  border-top: 1px solid rgba(212, 175, 105, 0.2);
   padding: 56px 24px 28px;
   color: var(--lavender-grey);
 }
@@ -177,7 +186,7 @@
   font-family: var(--font-heading);
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--soft-linen);
+  color: var(--soft-fawn);
   display: block;
   margin-bottom: 12px;
 }
@@ -211,7 +220,7 @@
   max-width: 1100px;
   margin: 0 auto;
   padding-top: 24px;
-  border-top: 1px solid rgba(130, 145, 168, 0.12);
+  border-top: 1px solid rgba(212, 175, 105, 0.12);
   text-align: center;
 }
 

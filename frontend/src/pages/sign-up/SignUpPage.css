@@ -1,0 +1,15 @@
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--prussian-blue);
+  color: var(--soft-linen);
+}
+
+.signup-page-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}

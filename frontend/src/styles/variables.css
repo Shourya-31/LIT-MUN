@@ -1,0 +1,30 @@
+:root {
+  --prussian-blue: #0B1F3A;
+  --soft-fawn: #D4AF69;
+  --soft-linen: #F5F0E7;
+  --deep-space-blue: #172E4D;
+  --lavender-grey: #8291A8;
+
+  --bg-canvas: #0B1F3A;
+  --bg-surface: #172E4D;
+  --bg-surface-elevated: #132742;
+  --bg-input: #0B1F3A;
+
+  --text-main: #F5F0E7;
+  --text-muted: #8291A8;
+  --text-highlight: #D4AF69;
+
+  --fawn-hover: #e0be7d;
+  --fawn-active: #c59f56;
+
+  --font-heading: 'Cinzel', Georgia, serif;
+  --font-subheading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --font-serif: var(--font-heading);
+  --font-sans: var(--font-body);
+
+  --transition-smooth: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-elevation: 0 18px 40px rgba(3, 10, 20, 0.45);
+  --shadow-subtle: 0 4px 16px rgba(3, 10, 20, 0.25);
+}

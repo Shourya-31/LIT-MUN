@@ -1,0 +1,222 @@
+.registration-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--prussian-blue);
+  color: var(--soft-linen);
+}
+
+.portal-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-hero {
+  padding: 64px 24px 44px;
+  background-color: var(--prussian-blue);
+  border-bottom: 1px solid rgba(130, 145, 168, 0.15);
+}
+
+.portal-hero-content {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.portal-headline {
+  font-family: var(--font-heading);
+  font-size: 2.85rem;
+  font-weight: 700;
+  color: var(--soft-linen);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.portal-lead {
+  font-family: var(--font-subheading);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--lavender-grey);
+  max-width: 740px;
+  margin: 0 auto 36px;
+  line-height: 1.6;
+}
+
+.conference-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+  text-align: left;
+}
+
+.spec-card {
+  background-color: var(--deep-space-blue);
+  border-radius: 6px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(3, 10, 20, 0.25);
+}
+
+.spec-label {
+  font-family: var(--font-subheading);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soft-fawn);
+  font-weight: 600;
+}
+
+.spec-value {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--soft-linen);
+  font-weight: 600;
+}
+
+@media (max-width: 860px) {
+  .conference-specs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .portal-headline {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .conference-specs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.portal-body {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 44px 24px 72px;
+}
+
+.view-selector-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 36px;
+  background-color: var(--deep-space-blue);
+  padding: 6px;
+  border-radius: 6px;
+  max-width: 580px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.view-tab-button {
+  flex: 1;
+  padding: 12px 18px;
+  border-radius: 4px;
+  font-family: var(--font-subheading);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--lavender-grey);
+  transition: color var(--transition-smooth), background-color var(--transition-smooth);
+  text-align: center;
+}
+
+.view-tab-button:hover {
+  color: var(--soft-linen);
+}
+
+.view-tab-button.selected {
+  background-color: var(--prussian-blue);
+  color: var(--soft-fawn);
+}
+
+.portal-active-view {
+  animation: fadeIn 220ms ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.portal-footer {
+  background-color: var(--prussian-blue);
+  border-top: 1px solid rgba(130, 145, 168, 0.2);
+  padding: 56px 24px 28px;
+  color: var(--lavender-grey);
+}
+
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+.footer-brand-title {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--soft-linen);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.footer-description {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 360px;
+}
+
+.footer-heading {
+  font-family: var(--font-subheading);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--soft-fawn);
+  display: block;
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.footer-info {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+.footer-bottom {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-top: 24px;
+  border-top: 1px solid rgba(130, 145, 168, 0.12);
+  text-align: center;
+}
+
+.footer-copy {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: rgba(130, 145, 168, 0.8);
+}

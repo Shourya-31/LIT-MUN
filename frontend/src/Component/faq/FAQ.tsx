@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { faqData, type FAQItem } from './faqData';
 import './FAQ.css';
 
@@ -8,6 +10,7 @@ export interface FAQProps {
 
 export const FAQ: React.FC<FAQProps> = ({ items = faqData }) => {
   const [openId, setOpenId] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion() === true;
 
   const toggleAccordion = (id: string) => {
     setOpenId((prevId) => (prevId === id ? null : id));
@@ -16,11 +19,12 @@ export const FAQ: React.FC<FAQProps> = ({ items = faqData }) => {
   return (
     <section className="faq-section" id="faq" aria-labelledby="faq-main-heading">
       <div className="faq-container">
-        <h2 id="faq-main-heading" className="faq-title">
-          FAQS
-        </h2>
+        <header className="faq-heading" data-reveal>
+          <p className="faq-kicker">Delegate information</p>
+          <h2 id="faq-main-heading" className="faq-title">Frequently asked questions</h2>
+        </header>
 
-        <div className="faq-list" role="presentation">
+        <div className="faq-list">
           {items.map((item) => {
             const isOpen = openId === item.id;
             const buttonId = `faq-btn-${item.id}`;
@@ -30,6 +34,7 @@ export const FAQ: React.FC<FAQProps> = ({ items = faqData }) => {
               <div
                 key={item.id}
                 className={`faq-item ${isOpen ? 'is-open' : ''}`}
+                data-faq-item
               >
                 <button
                   type="button"
@@ -46,19 +51,11 @@ export const FAQ: React.FC<FAQProps> = ({ items = faqData }) => {
                     <span className="faq-question-text">{item.question}</span>
                   </div>
 
-                  <span className="faq-icon-wrapper" aria-hidden="true">
-                    <svg
-                      className={`faq-chevron ${isOpen ? 'is-open' : ''}`}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </span>
+                  <ChevronDown
+                    className={`faq-chevron ${isOpen ? 'is-open' : ''}`}
+                    size={20}
+                    aria-hidden="true"
+                  />
                 </button>
 
                 <div
@@ -66,10 +63,23 @@ export const FAQ: React.FC<FAQProps> = ({ items = faqData }) => {
                   role="region"
                   aria-labelledby={buttonId}
                   className={`faq-answer-panel ${isOpen ? 'is-open' : ''}`}
+                  aria-hidden={!isOpen}
+                  inert={!isOpen ? '' : undefined}
                 >
-                  <div className="faq-answer-inner">
-                    <p className="faq-answer-content">{item.answer}</p>
-                  </div>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key={item.id}
+                        className="faq-answer-inner"
+                        initial={reduceMotion ? false : { height: 0, opacity: 0, y: -4 }}
+                        animate={{ height: 'auto', opacity: 1, y: 0 }}
+                        exit={{ height: 0, opacity: 0, y: reduceMotion ? 0 : -3 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.26, ease: 'easeOut' }}
+                      >
+                        <p className="faq-answer-content">{item.answer}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             );

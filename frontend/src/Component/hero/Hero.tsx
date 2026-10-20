@@ -1,72 +1,206 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import SplitType from 'split-type';
 import { ArrowRight } from 'lucide-react';
-import OceanWaveDivider from '../animations/OceanWaveDivider';
+import { useMagneticPointer } from '../../hooks/useMagneticPointer';
+import './Hero.css';
 
-export const Hero: React.FC = () => {
-    return (
-        <section className="relative min-h-screen flex flex-col justify-between pt-32 bg-navy overflow-hidden" id="home">
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-            <div
-                className="absolute inset-0 z-0 bg-cover bg-right bg-no-repeat"
-                style={{
-                    backgroundImage: `
-            linear-gradient(
-      90deg,
-      #0B1F3A 0%,
-      rgba(11,31,58,0.97) 25%,
-      rgba(11,31,58,0.82) 45%,
-      rgba(11,31,58,0.42) 72%,
-      rgba(11,31,58,0.20) 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(11,31,58,0.35) 0%,
-      transparent 35%,
-      rgba(11,31,58,0.25) 70%,
-      #0B1F3A 100%
-    ),
-            url('https://plus.unsplash.com/premium_photo-1683121190760-e8f42c972291?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D')
-          `
-                }}
-            />
+interface HeroProps {
+  onRegisterClick: () => void;
+}
 
-            <div className="relative z-10 max-w-[1320px] w-full mx-auto px-6 md:px-8 pt-12 pb-16">
-                <div className="max-w-2xl">
+export const Hero: React.FC<HeroProps> = ({ onRegisterClick }) => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLSpanElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const registerButtonRef = useMagneticPointer<HTMLButtonElement>(0.07);
+  const spotlightFrameRef = useRef<number | null>(null);
+  const spotlightPositionRef = useRef({ x: 0, y: 0 });
+  const spotlightEnabledRef = useRef(false);
 
-                    <h1 className="font-serif text-5xl md:text-6xl font-semibold text-gold leading-[1.12] mb-6">
-                        Model United Nations<br />
-                    </h1>
+  useEffect(() => {
+    const pointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateSpotlightPreference = () => {
+      spotlightEnabledRef.current = pointerQuery.matches && !motionQuery.matches;
+      if (!spotlightEnabledRef.current && spotlightFrameRef.current !== null) {
+        window.cancelAnimationFrame(spotlightFrameRef.current);
+        spotlightFrameRef.current = null;
+      }
+    };
 
-                    <p className="font-sans text-base md:text-lg text-[#c4cede] leading-relaxed max-w-lg mb-9">
-                        Step into the global arena. Engage in meaningful debates, build lasting
-                        connections, and be a part of a movement that shapes a better tomorrow.
-                    </p>
+    updateSpotlightPreference();
+    pointerQuery.addEventListener('change', updateSpotlightPreference);
+    motionQuery.addEventListener('change', updateSpotlightPreference);
+    return () => {
+      pointerQuery.removeEventListener('change', updateSpotlightPreference);
+      motionQuery.removeEventListener('change', updateSpotlightPreference);
+    };
+  }, []);
 
-                    <div className="flex flex-wrap items-center gap-7">
-                        <a
-                            href="#register"
-                            className="inline-flex items-center gap-2.5 bg-gold text-navy font-semibold text-sm md:text-base px-7 py-3 rounded hover:brightness-110 hover:-translate-y-1 transition-all shadow-[0_6px_20px_rgba(212,175,105,0.35)]"
-                        >
-                            <span>Register Now</span>
-                            <ArrowRight size={17} />
-                        </a>
+  useGSAP(() => {
+    const title = titleRef.current;
+    const image = imageRef.current;
+    if (!title || !image || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
 
-                        <a
-                            href="#about"
-                            className="group inline-flex items-center gap-2 text-ivory font-medium text-sm md:text-base border-b border-ivory pb-0.5 hover:text-gold hover:border-gold transition-colors"
-                        >
-                            <span>Read Press Release</span>
-                            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                        </a>
-                    </div>
-                </div>
-            </div>
+    const splitTitle = new SplitType(title, { types: 'words' });
+    const navbar = document.querySelector<HTMLElement>('.navbar-header');
+    const motionMedia = gsap.matchMedia();
+    const timeline = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
 
-            <OceanWaveDivider />
+    if (navbar) {
+      timeline.fromTo(
+        navbar,
+        { y: -12 },
+        { y: 0, duration: 0.55 },
+      );
+    }
 
+    timeline
+      .fromTo('[data-hero-eyebrow]', { y: 14 }, { y: 0, duration: 0.55 })
+      .fromTo(
+        splitTitle.words ?? [],
+        { autoAlpha: 0, y: 24 },
+        { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.11 },
+        '-=0.2',
+      )
+      .fromTo('[data-hero-copy]', { y: 14 }, { y: 0, duration: 0.55 }, '-=0.3')
+      .fromTo('[data-hero-actions]', { y: 12 }, { y: 0, duration: 0.5 }, '-=0.2')
+      .fromTo(
+        '.hero-image-frame',
+        { clipPath: 'inset(0 100% 0 0)' },
+        { clipPath: 'inset(0 0 0 0)', duration: 0.75, ease: 'power2.inOut' },
+        '-=0.75',
+      )
+      .fromTo(
+        image,
+        {
+          autoAlpha: 0,
+          scale: 1.035,
+          clipPath: 'polygon(0 0, 0 0, 0 0, 0 0, 0 100%, 0 8%)',
+        },
+        {
+          autoAlpha: 1,
+          scale: 1,
+          clipPath: 'polygon(5% 0, 100% 0, 100% 90%, 94% 100%, 0 100%, 0 8%)',
+          duration: 1.1,
+        },
+        '-=0.75',
+      );
 
-        </section>
-    );
+    motionMedia.add('(min-width: 761px) and (hover: hover) and (pointer: fine)', () => {
+      gsap.to(image, {
+        yPercent: 5,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    });
+
+    const startEntrance = () => timeline.play(0);
+    if (document.querySelector('.loading-screen')) {
+      window.addEventListener('litmun:loader-dismissed', startEntrance, { once: true });
+    } else {
+      startEntrance();
+    }
+
+    return () => {
+      window.removeEventListener('litmun:loader-dismissed', startEntrance);
+      if (spotlightFrameRef.current !== null) {
+        window.cancelAnimationFrame(spotlightFrameRef.current);
+        spotlightFrameRef.current = null;
+      }
+      motionMedia.revert();
+      splitTitle.revert();
+    };
+  }, { scope: sectionRef });
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== 'mouse' || !spotlightEnabledRef.current) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    spotlightPositionRef.current = {
+      x: event.clientX - bounds.left,
+      y: event.clientY - bounds.top,
+    };
+    if (spotlightFrameRef.current !== null) return;
+
+    const section = event.currentTarget;
+    spotlightFrameRef.current = window.requestAnimationFrame(() => {
+      section.style.setProperty('--spotlight-x', `${spotlightPositionRef.current.x}px`);
+      section.style.setProperty('--spotlight-y', `${spotlightPositionRef.current.y}px`);
+      spotlightFrameRef.current = null;
+    });
+  };
+
+  return (
+    <section
+      ref={sectionRef}
+      className="hero-section"
+      id="home"
+      onPointerMove={handlePointerMove}
+      aria-labelledby="hero-title"
+    >
+      <div className="hero-layout">
+        <div className="hero-copy">
+          <p className="hero-eyebrow" data-hero-eyebrow>
+            <span className="hero-eyebrow-line" aria-hidden="true" />
+            LIT-MUN 2026–27 <span aria-hidden="true">/</span> NIT Raipur
+          </p>
+
+          <h1 className="hero-title" id="hero-title" aria-label="Model United Nations">
+            <span ref={titleRef} aria-hidden="true">Model United Nations</span>
+          </h1>
+
+          <p className="hero-description" data-hero-copy>
+            Step into the global arena. Engage in meaningful debates, build lasting connections, and be a part of a movement that shapes a better tomorrow.
+          </p>
+
+          <div className="hero-actions" data-hero-actions>
+            <button
+              ref={registerButtonRef}
+              type="button"
+              className="hero-primary-action magnetic-button"
+              onClick={onRegisterClick}
+            >
+              <span className="button-label">
+              Register Now
+              </span>
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
+            <a className="hero-secondary-action" href="#about">
+              About the conference
+              <ArrowRight size={17} aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+
+        <figure className="hero-visual">
+          <img
+            ref={imageRef}
+            className="hero-image"
+            src="/images/Elegant%20LIT-MUN%20Global%20Emblem.png"
+            alt="Elegant gold and ivory LIT-MUN Global Emblem"
+            loading="eager"
+          />
+          <span className="hero-image-frame" aria-hidden="true" />
+          <figcaption className="hero-image-caption">
+            {/* <span>LIT-MUN Global Emblem</span> */}
+          </figcaption>
+        </figure>
+      </div>
+      <span className="hero-index" aria-hidden="true">01 — 06</span>
+    </section>
+  );
 };
 
-export default Hero
+export default Hero;

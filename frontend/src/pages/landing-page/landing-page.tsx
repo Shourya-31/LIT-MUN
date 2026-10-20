@@ -1,10 +1,6 @@
 import React from 'react';
-import Navbar from '../../Component/navbar/Navbar';
-import Hero from '../../Component/hero/Hero';
-import FAQ from '../../Component/faq/FAQ';
-import About from '../../Component/about/About';
-import WaterPulseProgress from '../../Component/animations/WaterPulseProgress';
-import ScrollReveal from '../../Component/animations/ScrollReveal';
+import { Navbar, Hero, About, FAQ, Contact } from '../../Component';
+import { WaterPulseProgress, ScrollReveal } from '../../Component/animations';
 
 export const LandingPage: React.FC = () => {
     return (
@@ -19,6 +15,10 @@ export const LandingPage: React.FC = () => {
 
             <ScrollReveal delay={150}>
                 <FAQ />
+            </ScrollReveal>
+
+            <ScrollReveal delay={150}>
+                <Contact />
             </ScrollReveal>
         </main>
     );

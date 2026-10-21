@@ -64,12 +64,8 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
                 <span className="spec-value">HIRA Hall, NIT Raipur</span>
               </div>
               <div className="spec-card">
-                <span className="spec-label">Priority Allotment</span>
-                <span className="spec-value">Closes November xx, 2026</span>
-              </div>
-              <div className="spec-card">
-                <span className="spec-label">Delegation Secretariat</span>
-                <span className="spec-value">Office of Delegate Affairs</span>
+                <span className="spec-label">Registration Closes</span>
+                <span className="spec-value">November xx, 2026</span>
               </div>
             </div>
           </div>

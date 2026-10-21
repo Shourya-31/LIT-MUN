@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import './LoadingScreen.css';
+import NITRRMUNdark from '../../assets/NITRRMUN-dark.png';
 
 gsap.registerPlugin(useGSAP);
 
-const emblemUrl = '/images/Elegant%20LIT-MUN%20Global%20Emblem.png';
+const emblemUrl = NITRRMUNdark;
 const minimumDisplayTime = 1200;
 const maximumWaitTime = 3500;
 
@@ -55,7 +56,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
     let motionTweens: gsap.core.Animation[] = [];
     let minimumTimer = 0;
     let fallbackTimer = 0;
-    let removeImageListeners = () => {};
+    let removeImageListeners = () => { };
 
     const exitWhenReady = () => {
       if (!assetsReady || !appReady || !minimumElapsed || !introComplete || exiting) return;
@@ -202,7 +203,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
   }, { scope: screenRef });
 
   return (
-    <div ref={screenRef} className="loading-screen" role="status" aria-label="Loading LIT-MUN">
+    <div ref={screenRef} className="loading-screen" role="status" aria-label="Loading NITRRMUN">
       <div ref={glowRef} className="loading-glow" aria-hidden="true" />
       <div className="loading-content">
         <div className="loading-stage" aria-hidden="true">
@@ -225,15 +226,15 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
               ref={logoImageRef}
               className="loading-logo"
               src={emblemUrl}
-              alt="LIT-MUN Global Emblem"
-              onError={() => console.error(`Failed to load the LIT-MUN emblem: ${emblemUrl}`)}
+              alt="Official NITRRMUN Global Emblem"
+              onError={() => console.error(`Failed to load the NITRRMUN emblem: ${emblemUrl}`)}
             />
             <span ref={sweepRef} className="loading-logo-sweep" />
           </div>
         </div>
 
         <p ref={subtitleRef} className="loading-subtitle">
-          MODEL UNITED NATIONS <span aria-hidden="true">•</span> LITERATI
+          NITRRMUN 2026–27 <span aria-hidden="true">•</span> NIT RAIPUR
         </p>
         <span ref={accentRef} className="loading-accent" aria-hidden="true">
           <span ref={accentSweepRef} />

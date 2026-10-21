@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useMagneticPointer } from '../../hooks/useMagneticPointer';
 import './Navbar.css';
+import NITRRMUNcrest from '../../assets/NITRRMUN-crest.png';
 
 type PortalTab = 'landing' | 'registration' | 'signin' | 'signup';
 
@@ -13,7 +14,6 @@ export interface NavbarProps {
 
 const navItems: { label: string; tab: PortalTab }[] = [
   { label: 'Home', tab: 'landing' },
-  { label: 'Registration', tab: 'registration' },
   { label: 'Sign In', tab: 'signin' },
 ];
 
@@ -74,11 +74,15 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
           type="button"
           className="navbar-brand"
           onClick={() => selectTab('landing')}
-          aria-label="LIT-MUN home"
+          aria-label="NITRRMUN home"
         >
-          <span className="brand-mark" aria-hidden="true">L</span>
+          <img
+            src={NITRRMUNcrest}
+            alt="NITRRMUN Crest"
+            className="navbar-brand-logo"
+          />
           <span className="brand-text">
-            <span className="brand-title">LIT-MUN</span>
+            <span className="brand-title">NITRRMUN</span>
             <span className="brand-subtitle">Model United Nations</span>
           </span>
         </button>

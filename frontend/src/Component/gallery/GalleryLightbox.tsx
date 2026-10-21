@@ -47,7 +47,7 @@ export default function GalleryLightbox({ images, imageId, onSelect, onClose }: 
         if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); move(event.key === 'ArrowRight' ? 1 : -1); }
       }}>
       <div className="gallery-lightbox-header">
-        <div><p id={`${uid}-title`}>LIT-MUN <span>Gallery</span></p><span className="gallery-lightbox-count" role="status" aria-live="polite" aria-atomic="true">Photograph {index + 1} of {images.length}</span></div>
+        <div><p id={`${uid}-title`}>NITRRMUN <span>Gallery</span></p><span className="gallery-lightbox-count" role="status" aria-live="polite" aria-atomic="true">Photograph {index + 1} of {images.length}</span></div>
         <button type="button" className="gallery-lightbox-close" onClick={requestClose} aria-label="Close gallery"><X size={24} aria-hidden="true" /></button>
       </div>
       <div className="gallery-lightbox-stage">

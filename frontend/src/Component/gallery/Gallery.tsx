@@ -80,7 +80,7 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
         <div data-entrance="heading">
           <SectionHeading id={`${uid}-heading`} number="03" eyebrow="Beyond the debate"
             title={<>Moments that<br /><em>make the conference.</em></>}
-            description="The exchanges, the connections, the shared sense of purpose. LIT-MUN's story, one photograph at a time." />
+            description="The exchanges, the connections, the shared sense of purpose. NITRRMUN's story, one photograph at a time." />
         </div>
 
         {selected ? (
@@ -118,7 +118,7 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
               </div>
 
               <div className="gallery-feature-copy" data-entrance="copy">
-                <p className="gallery-feature-eyebrow">LIT-MUN / In focus</p>
+                <p className="gallery-feature-eyebrow">NITRRMUN In focus</p>
                 <h3>Every dialogue<br />leaves a memory.</h3>
                 <div className="gallery-current-caption" aria-live="polite" aria-atomic="true">
                   {departing && <div key={`caption-${selection.revision}`} className="gallery-caption-departing" aria-hidden="true">
@@ -130,13 +130,10 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
                     <p id={`${uid}-caption`} className="gallery-caption-text">{selected.caption || selected.alt}</p>
                   </div>
                 </div>
-                <p className="gallery-stack-hint">Explore the stack with the arrows, or open the full gallery.</p>
               </div>
             </div>
           </div>
         ) : <div className="conference-empty"><p>No photographs in this collection yet.</p></div>}
-
-        <div className="gallery-endnote"><span>LIT-MUN</span><span>Dialogue. Diplomacy. Perspective.</span><span aria-hidden="true">✦</span></div>
       </div>
 
       {overviewOpen && <GalleryOverview images={images} selectedId={selected?.id} onClose={() => setOverviewOpen(false)}

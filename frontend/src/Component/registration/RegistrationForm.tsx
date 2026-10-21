@@ -224,10 +224,19 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </p>
 
           <div className="registration-actions">
-            {onNavigateToSignIn && (
+            {onSuccess && (
               <button
                 type="button"
                 className="registration-submit-btn"
+                onClick={() => onSuccess(formData)}
+              >
+                Go to Dashboard
+              </button>
+            )}
+            {onNavigateToSignIn && (
+              <button
+                type="button"
+                className="registration-secondary-btn"
                 onClick={onNavigateToSignIn}
               >
                 Go to Delegate Sign In

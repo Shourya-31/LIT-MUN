@@ -10,11 +10,15 @@ export type ActivePortalView = 'registration' | 'signin' | 'signup';
 export interface RegistrationPageProps {
   initialView?: ActivePortalView;
   onNavigateToHome?: () => void;
+  onNavigateToDashboard?: () => void;
+  onRegistrationSuccess?: (data: any) => void;
 }
 
 export const RegistrationPage: React.FC<RegistrationPageProps> = ({
   initialView = 'registration',
   onNavigateToHome,
+  onNavigateToDashboard,
+  onRegistrationSuccess,
 }) => {
   const [activeView, setActiveView] = useState<ActivePortalView>(initialView);
 
@@ -33,7 +37,11 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
             if (onNavigateToHome) onNavigateToHome();
             return;
           }
-          setActiveView(tab);
+          if (tab === 'dashboard') {
+            if (onNavigateToDashboard) onNavigateToDashboard();
+            return;
+          }
+          setActiveView(tab as ActivePortalView);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
@@ -104,6 +112,7 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
           <div className="portal-active-view">
             {activeView === 'registration' && (
               <RegistrationForm
+                onSuccess={onRegistrationSuccess}
                 onNavigateToSignIn={() => {
                   setActiveView('signin');
                   window.scrollTo({ top: 0, behavior: 'smooth' });

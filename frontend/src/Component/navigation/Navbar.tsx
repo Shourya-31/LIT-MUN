@@ -14,7 +14,14 @@ export interface NavbarProps {
 
 const navItems: { label: string; tab: PortalTab }[] = [
   { label: 'Home', tab: 'landing' },
+  { label: 'Registration', tab: 'registration' },
   { label: 'Sign In', tab: 'signin' },
+];
+
+const conferenceLinks = [
+  { label: 'Schedule', href: '#schedule' },
+  { label: 'Resources', href: '#resources' },
+  { label: 'Gallery', href: '#gallery' },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
@@ -89,23 +96,27 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
 
         <nav className="navbar-nav" id="portal-navigation-desktop" aria-label="Main navigation">
           {navItems.map(({ label, tab }) => (
-            <button
-              key={tab}
-              type="button"
-              className={`nav-link ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => selectTab(tab)}
-              aria-current={activeTab === tab ? 'page' : undefined}
-            >
-              {label}
-              {activeTab === tab && (
-                <motion.span
-                  className="nav-active-indicator"
-                  layoutId="navbar-active-indicator"
-                  transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }}
-                  aria-hidden="true"
-                />
-              )}
-            </button>
+            <React.Fragment key={tab}>
+              <button
+                type="button"
+                className={`nav-link ${activeTab === tab ? 'active' : ''}`}
+                onClick={() => selectTab(tab)}
+                aria-current={activeTab === tab ? 'page' : undefined}
+              >
+                {label}
+                {activeTab === tab && (
+                  <motion.span
+                    className="nav-active-indicator"
+                    layoutId="navbar-active-indicator"
+                    transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }}
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+              {tab === 'landing' && activeTab === 'landing' && conferenceLinks.map(({ label: sectionLabel, href }) => (
+                <a key={href} className="nav-link" href={href}>{sectionLabel}</a>
+              ))}
+            </React.Fragment>
           ))}
           <button
             ref={accountButtonRef}
@@ -130,16 +141,20 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
                 variants={menuVariants}
               >
                 {navItems.map(({ label, tab }) => (
-                  <motion.button
-                    key={tab}
-                    type="button"
-                    className={`nav-link ${activeTab === tab ? 'active' : ''}`}
-                    onClick={() => selectTab(tab)}
-                    aria-current={activeTab === tab ? 'page' : undefined}
-                    variants={itemVariants}
-                  >
-                    {label}
-                  </motion.button>
+                  <React.Fragment key={tab}>
+                    <motion.button
+                      type="button"
+                      className={`nav-link ${activeTab === tab ? 'active' : ''}`}
+                      onClick={() => selectTab(tab)}
+                      aria-current={activeTab === tab ? 'page' : undefined}
+                      variants={itemVariants}
+                    >
+                      {label}
+                    </motion.button>
+                    {tab === 'landing' && activeTab === 'landing' && conferenceLinks.map(({ label: sectionLabel, href }) => (
+                      <motion.a key={href} className="nav-link" href={href} onClick={() => setMenuOpen(false)} variants={itemVariants}>{sectionLabel}</motion.a>
+                    ))}
+                  </React.Fragment>
                 ))}
                 <motion.button
                   type="button"

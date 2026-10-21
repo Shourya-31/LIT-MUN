@@ -90,7 +90,7 @@ export const Committees: React.FC<CommitteesProps> = ({ committees = committeesD
                   aria-labelledby={buttonId}
                   className={`committee-agenda-panel ${isOpen ? 'is-open' : ''}`}
                   aria-hidden={!isOpen}
-                  inert={!isOpen ? '' : undefined}
+                  ref={(element) => { if (element) element.inert = !isOpen; }}
                 >
                   <AnimatePresence initial={false}>
                     {isOpen && (

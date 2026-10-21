@@ -103,6 +103,12 @@
   transition: color 180ms ease, background-color 180ms ease;
 }
 
+.navbar-nav a.nav-link,
+.navbar-mobile-menu a.nav-link {
+  display: flex;
+  align-items: center;
+}
+
 .nav-link::after {
   position: absolute;
   right: 0;
@@ -207,7 +213,7 @@
   outline-offset: 4px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 1100px) {
   .navbar-container {
     width: calc(100% - 36px);
     min-height: 72px;

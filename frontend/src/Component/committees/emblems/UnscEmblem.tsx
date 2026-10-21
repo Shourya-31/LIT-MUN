@@ -21,7 +21,7 @@ export const UnscEmblem: React.FC<EmblemProps> = ({ className = 'committee-emble
       <g className="unsc-peace-dove" fill="currentColor">
         {/* Dove Torso, Breast, Head & Tail */}
         <path d="M148 108 c3-1 6 0 8 2 2 2 3 4 2 6 -2 3 -5 4 -8 4 -4 0 -8-2 -10-5 -4 5 -10 9 -16 12 -5 2 -11 3 -16 3 -7 0 -14-2 -20-5 -6-4 -11-9 -14-15 4 1 8 1 12 0 6-1 12-4 17-8 4-3 7-7 10-11 5-2 10-3 15-2 4 1 8 3 11 6 3 3 7 7 11 10 z" />
-        
+
         {/* Lower Body & Fanning Tail Feathers */}
         <path d="M108 126 c-3 7-5 15-4 22 1 6 4 11 8 16 3 4 8 7 13 8 7 1 14-1 20-4 4-2 8-5 11-9 -4 1-8 1-12 0 -7-2 -13-6 -18-11 -4-5-7-12-8-19 -4-1-7-2-10-3 z" />
         <path d="M106 148 c-8 4-17 6-26 5 -5-1-10-3-14-6 6 1 12 0 17-2 6-2 11-6 15-10 3 3 5 8 8 13 z" />

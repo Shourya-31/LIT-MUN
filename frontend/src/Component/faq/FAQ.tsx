@@ -64,7 +64,7 @@ export const FAQ: React.FC<FAQProps> = ({ items = faqData }) => {
                   aria-labelledby={buttonId}
                   className={`faq-answer-panel ${isOpen ? 'is-open' : ''}`}
                   aria-hidden={!isOpen}
-                  inert={!isOpen ? '' : undefined}
+                  ref={(element) => { if (element) element.inert = !isOpen; }}
                 >
                   <AnimatePresence initial={false}>
                     {isOpen && (

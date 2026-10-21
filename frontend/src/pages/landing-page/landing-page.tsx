@@ -3,8 +3,11 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import { ArrowUpRight } from 'lucide-react';
 import { Hero, About, Committees, FAQ, Contact } from '../../Component';
+import Schedule from '../../Component/schedule/Schedule';
+import Resources from '../../Component/resources/Resources';
+import Gallery from '../../Component/gallery/Gallery';
+import LandingFooter from '../../Component/footer/LandingFooter';
 import './LandingPage.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -13,7 +16,7 @@ interface LandingPageProps {
   onNavigateToRegistration?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = () => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistration }) => {
   const pageRef = useRef<HTMLElement>(null);
   const progressRef = useRef<HTMLSpanElement>(null);
 
@@ -33,7 +36,7 @@ export const LandingPage: React.FC<LandingPageProps> = () => {
     const animateLenis = (time: number) => lenis?.raf(time * 1000);
     const pauseWhenHidden = () => {
       if (!lenis) return;
-      if (document.hidden) {
+      if (document.hidden || document.querySelector('.gallery-overview[open], .gallery-lightbox[open]')) {
         lenis.stop();
         gsap.ticker.remove(animateLenis);
       } else {
@@ -46,6 +49,8 @@ export const LandingPage: React.FC<LandingPageProps> = () => {
     lenis?.on('scroll', updateScrollTrigger);
     if (lenis && !document.hidden) gsap.ticker.add(animateLenis);
     document.addEventListener('visibilitychange', pauseWhenHidden);
+    window.addEventListener('litmun:gallery-open', pauseWhenHidden);
+    window.addEventListener('litmun:gallery-close', pauseWhenHidden);
 
     gsap.utils.toArray<HTMLElement>(
       '[data-reveal]:not([data-reveal-footer]):not([data-closing-cta])',
@@ -225,6 +230,8 @@ export const LandingPage: React.FC<LandingPageProps> = () => {
       lenis?.off('scroll', updateScrollTrigger);
       if (lenis) gsap.ticker.remove(animateLenis);
       document.removeEventListener('visibilitychange', pauseWhenHidden);
+      window.removeEventListener('litmun:gallery-open', pauseWhenHidden);
+      window.removeEventListener('litmun:gallery-close', pauseWhenHidden);
       lenis?.destroy();
       aboutImageMotion.revert();
     };
@@ -238,24 +245,12 @@ export const LandingPage: React.FC<LandingPageProps> = () => {
       <Hero />
       <About />
       <Committees />
+      <Schedule />
+      <Resources />
+      <Gallery />
       <FAQ />
       <Contact />
-      <footer className="landing-footer" data-reveal data-reveal-footer>
-        <div className="landing-footer-inner">
-          <div>
-            <p className="landing-footer-title">NITRRMUN 2026–27</p>
-            <p>National Institute of Technology Raipur Model United Nations</p>
-          </div>
-          <nav className="landing-footer-links" aria-label="Footer">
-            <a href="#contact">Contact</a>
-            <a href="mailto:nitrrmun@nitrr.ac.in">Email</a>
-            <a href="https://instagram.com/nitrrmun" target="_blank" rel="noopener noreferrer">
-              Instagram <ArrowUpRight size={14} aria-hidden="true" />
-            </a>
-          </nav>
-          <p className="landing-footer-copy">© 2026 NITRRMUN Conference, NIT Raipur. All rights reserved.</p>
-        </div>
-      </footer>
+      <LandingFooter onRegister={onNavigateToRegistration} />
     </main>
   );
 };

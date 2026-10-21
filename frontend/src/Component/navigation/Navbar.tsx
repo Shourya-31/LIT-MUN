@@ -5,7 +5,7 @@ import { useMagneticPointer } from '../../hooks/useMagneticPointer';
 import './Navbar.css';
 import NITRRMUNcrest from '../../assets/NITRRMUN-crest.png';
 
-type PortalTab = 'landing' | 'registration' | 'signin' | 'signup';
+type PortalTab = 'landing' | 'registration' | 'signin' | 'signup' | 'dashboard';
 
 export interface NavbarProps {
   activeTab: PortalTab;
@@ -14,7 +14,7 @@ export interface NavbarProps {
 
 const navItems: { label: string; tab: PortalTab }[] = [
   { label: 'Home', tab: 'landing' },
-  { label: 'Registration', tab: 'registration' },
+  { label: 'Dashboard', tab: 'dashboard' },
   { label: 'Sign In', tab: 'signin' },
 ];
 

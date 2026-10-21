@@ -1,10 +1,26 @@
 # Schedule, Resources, and Gallery
 
-The three sections are rendered after About and before FAQs in
+The three sections are rendered after Committees and before FAQs in
 `src/pages/landing-page/landing-page.tsx`. The landing navbar links to `#schedule`,
-`#resources`, and `#gallery`. It also opens the existing registration, sign-in,
-and sign-up portal through a callback from `App.tsx`. Only the landing navbar is
-rendered on the home page; the portal keeps its existing navigation and footer.
+`#resources`, and `#gallery`. The updated navigation component in
+`src/Component/navigation/` is shared by the landing page and portal. It keeps
+main's NITRRMUN branding, sign-in/account actions, and mobile menu; landing-only
+section links are hidden in the portal. There is one navbar on each view.
+
+The feature branch incorporates main through `1e69885`, preserving the updated
+loader, Hero, About, Committees, FAQ, Contact, footer, branding assets, and global
+styles. The old separate `Component/navbar/` implementation has been removed.
+The Schedule, Resources, Gallery, their data, photos, and animations are retained.
+Gallery dialogs carry `data-lenis-prevent` so main's smooth-scrolling integration
+does not intercept scrolling within the overview or enlarged photo viewer.
+Opening the first gallery dialog pauses Lenis; closing the final dialog resumes
+it, so background momentum cannot continue while nested dialogs are open.
+The two main accordion panels set native `inert` through typed DOM refs for
+React 18 compatibility, preserving their existing keyboard behavior.
+
+Install and run frontend commands from `frontend/`, which contains the package
+manifest, rather than from the repository root. Stop a running Vite server before
+`npm ci` on Windows if it holds native CSS modules open.
 
 ## Update the content
 
@@ -155,7 +171,7 @@ src/Component/gallery/GalleryOverview.tsx
 src/Component/gallery/useGalleryDialog.ts
 src/Component/gallery/galleryData.ts
 src/Component/gallery/types.ts
-src/Component/navbar/Navbar.css
+src/Component/navigation/Navbar.css
 src/assets/gallery/README.md
 src/assets/gallery/*.webp (17 lightbox images)
 src/assets/gallery/thumbnails/*.webp (34 responsive thumbnails)
@@ -165,7 +181,7 @@ Modified:
 
 ```text
 src/App.tsx
-src/Component/navbar/Navbar.tsx
+src/Component/navigation/Navbar.tsx
 src/pages/landing-page/landing-page.tsx
 ```
 
@@ -218,7 +234,7 @@ the new section animations.
 - Eight scroll-entrance lifecycle checks pass: observer reuse, revealing only
   intersecting targets, no replay, keyboard focus, content changes, runtime and
   initial reduced motion, unavailable-API fallback, and cleanup.
-- The latest animation enhancement adds about 1.5 KB with gzip to the combined
+- Before the main integration, the animation enhancement added about 1.5 KB with gzip to the combined
   production JavaScript and CSS compared with commit `3b150dc`. This measures
   bundle size, not page-load time on a real device. Image assets and dependency
   manifests are unchanged; responsive previews remain lazy-loaded and full-size
@@ -233,5 +249,12 @@ the new section animations.
 - Browser visual QA was unavailable: the browser connector was unavailable and
   Windows Computer Use stopped because it could not reliably determine the URL.
   Responsive appearance and native dialog focus containment still need browser QA.
-- No project dependencies were added. Temporary test tooling was isolated under
+- The merge adopts main's dependency manifest and lockfile without extra packages.
+  `npm ci` succeeds when run inside `frontend/` with the local Vite server stopped.
+  Eight additional integration checks cover page composition and ordering, one
+  navbar per view, desktop/mobile section links, committee/FAQ inert behavior,
+  portal navigation, nested gallery smooth-scroll isolation, and resource search,
+  filtering, unpublished states, and safe file links. Animation drivers are mocked
+  for these integration checks; browser visual QA remains pending.
+- The original section work added no project dependencies. Temporary test tooling was isolated under
   ignored `node_modules` and does not change the project's dependency manifests.

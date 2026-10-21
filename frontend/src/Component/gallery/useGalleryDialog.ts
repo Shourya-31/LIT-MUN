@@ -33,13 +33,17 @@ export default function useGalleryDialog(onClose: () => void) {
     if (openDialogs === 0) previousBodyOverflow = document.body.style.overflow;
     openDialogs += 1;
     document.body.style.overflow = 'hidden';
+    if (openDialogs === 1) window.dispatchEvent(new Event('litmun:gallery-open'));
 
     return () => {
       closingAnimation.current?.cancel();
       closingAnimation.current = null;
       dialog.close();
       openDialogs -= 1;
-      if (openDialogs === 0) document.body.style.overflow = previousBodyOverflow;
+      if (openDialogs === 0) {
+        document.body.style.overflow = previousBodyOverflow;
+        window.dispatchEvent(new Event('litmun:gallery-close'));
+      }
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
         previousFocus.focus({ preventScroll: true });
       }

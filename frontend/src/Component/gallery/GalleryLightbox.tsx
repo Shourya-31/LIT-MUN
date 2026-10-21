@@ -39,7 +39,7 @@ export default function GalleryLightbox({ images, imageId, onSelect, onClose }: 
   };
 
   return createPortal(
-    <dialog ref={dialogRef} className="gallery-lightbox" aria-labelledby={`${uid}-title`} aria-describedby={`${uid}-caption`}
+    <dialog ref={dialogRef} className="gallery-lightbox" data-lenis-prevent aria-labelledby={`${uid}-title`} aria-describedby={`${uid}-caption`}
       onCancel={(event) => { event.preventDefault(); requestClose(); }}
       onClick={(event) => { if (event.target === event.currentTarget) requestClose(); }}
       onKeyDown={(event) => {

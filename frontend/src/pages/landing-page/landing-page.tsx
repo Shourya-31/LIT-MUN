@@ -6,7 +6,7 @@ import Lenis from 'lenis';
 import SplitType from 'split-type';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { useMagneticPointer } from '../../hooks/useMagneticPointer';
-import { Hero, About, FAQ, Contact } from '../../Component';
+import { Hero, About, Committees, FAQ, Contact } from '../../Component';
 import './LandingPage.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -85,6 +85,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
           scrollTrigger: {
             trigger: footer,
             start: 'top 100%',
+            once: true,
+          },
+        },
+      );
+    }
+
+    const committeeCards = gsap.utils.toArray<HTMLElement>('[data-committee-card]', page);
+    if (committeeCards.length) {
+      gsap.fromTo(
+        committeeCards,
+        { y: 22, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.65,
+          stagger: 0.12,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '#committees',
+            start: 'top 82%',
             once: true,
           },
         },
@@ -249,6 +269,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
       </div>
       <Hero onRegisterClick={onNavigateToRegistration} />
       <About />
+      <Committees />
       <FAQ />
       <Contact />
       <section className="landing-registration-cta" data-closing-cta>

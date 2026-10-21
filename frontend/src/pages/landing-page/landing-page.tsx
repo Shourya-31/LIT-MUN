@@ -8,6 +8,7 @@ import Schedule from '../../Component/schedule/Schedule';
 import Resources from '../../Component/resources/Resources';
 import Gallery from '../../Component/gallery/Gallery';
 import LandingFooter from '../../Component/footer/LandingFooter';
+import FadeContent from '../../Component/animations/FadeContent';
 import './LandingPage.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -243,14 +244,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
         <span ref={progressRef} />
       </div>
       <Hero />
-      <About />
-      <Committees />
-      <Schedule />
-      <Resources />
-      <Gallery />
-      <FAQ />
-      <Contact />
-      <LandingFooter onRegister={onNavigateToRegistration} />
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <About />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <Committees />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <Schedule />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <Resources />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <Gallery />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <FAQ />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <Contact />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <LandingFooter onRegister={onNavigateToRegistration} />
+      </FadeContent>
     </main>
   );
 };

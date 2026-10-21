@@ -1,11 +1,11 @@
 export const resourceCategories = [
   { id: 'background-guides', label: 'Committee Background Guides', shortLabel: 'Background guides' },
-  { id: 'procedure', label: 'Rules of Procedure', shortLabel: 'Rules of procedure' },
-  { id: 'position-papers', label: 'Position Paper Guidelines', shortLabel: 'Position papers' },
-  { id: 'resolutions', label: 'Resolution Writing Guides', shortLabel: 'Resolutions' },
-  { id: 'handbook', label: 'Delegate Handbook', shortLabel: 'Delegate handbook' },
-  { id: 'conference', label: 'Conference Guidelines', shortLabel: 'Conference guidelines' },
-  { id: 'additional', label: 'Additional Resources', shortLabel: 'Additional resources' },
+  { id: 'procedure', label: 'Protocol of Deliberation', shortLabel: 'Procedure' },
+  { id: 'position-papers', label: 'Research and Representation', shortLabel: 'Portfolio preparation' },
+  { id: 'resolutions', label: 'Drafting and Resolution', shortLabel: 'Resolution drafting' },
+  { id: 'handbook', label: 'The Delegate Journey', shortLabel: 'Delegate journey' },
+  { id: 'conference', label: 'Code of Conduct', shortLabel: 'Conduct' },
+  { id: 'additional', label: 'Recognition and Awards', shortLabel: 'Recognition' },
 ] as const;
 
 export type ResourceCategory = typeof resourceCategories[number]['id'];
@@ -16,6 +16,7 @@ interface ResourceDetails {
   description: string;
   category: ResourceCategory;
   fileType?: string;
+  guidance?: readonly { heading: string; text: string }[];
 }
 
 // An available resource must have a real file URL. Unpublished resources cannot have one.

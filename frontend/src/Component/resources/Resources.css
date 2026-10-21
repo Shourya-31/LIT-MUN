@@ -24,6 +24,16 @@
 .resource-card h3 { font-size: 1.12rem; letter-spacing: 0; line-height: 1.5; }
 .resource-description { flex: 1; margin-top: 12px; color: #c0cad8; font-size: 0.8rem; line-height: 1.9; }
 .resource-card-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--border-subtle); padding-top: 18px; margin-top: 25px; min-height: 44px; }
+.resource-card { scroll-margin-top: 110px; align-self: start; }
+.resource-read { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; color: var(--gold); font-size: 0.8rem; text-align: left; }
+.resource-read svg { transition: transform 200ms ease; }
+.resource-read[aria-expanded='true'] svg { transform: rotate(180deg); }
+.resource-guidance[hidden] { display: none; }
+.resource-guidance { padding-top: 22px; border-top: 1px solid var(--border-subtle); margin-top: 16px; animation: conference-enter 200ms ease-out; }
+.resource-guidance > div + div { margin-top: 19px; }
+.resource-guidance h4 { font: 600 0.78rem/1.6 var(--font-body); color: var(--ivory); letter-spacing: 0; }
+.resource-guidance p { margin-top: 7px; color: #c0cad8; font-size: 0.78rem; line-height: 1.85; }
+.resource-guidance .resource-guidance-file-note { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border-subtle); color: var(--gold); font-size: 0.7rem; }
 .resource-coming-soon { display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 0.72rem; }
 .resource-coming-soon > span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .resource-unpublished { margin-left: auto; color: #aab8ca; font-size: 0.62rem; }

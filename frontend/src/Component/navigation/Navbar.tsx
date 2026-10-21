@@ -14,6 +14,7 @@ export interface NavbarProps {
 
 const navItems: { label: string; tab: PortalTab }[] = [
   { label: 'Home', tab: 'landing' },
+  { label: 'Registration', tab: 'registration' },
   { label: 'Sign In', tab: 'signin' },
 ];
 

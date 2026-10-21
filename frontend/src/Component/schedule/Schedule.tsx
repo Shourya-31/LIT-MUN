@@ -1,13 +1,15 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
-import { ArrowUpRight, CalendarDays, ChevronDown, Coffee, Gavel, MapPin, Sparkles } from 'lucide-react';
+import { ArrowUpRight, BookOpen, CalendarDays, ChevronDown, Coffee, Gavel, MapPin, Sparkles } from 'lucide-react';
 import SectionHeading from '../conference/SectionHeading';
 import useScrollEntrance from '../animations/useScrollEntrance';
 import { scheduleDays } from './scheduleData';
+import ScheduleWave from './ScheduleWave';
 import type { ScheduleCategory, ScheduleProps } from './types';
 import './Schedule.css';
 
 const categories = {
+  preparation: { label: 'Preparation', icon: BookOpen },
   ceremony: { label: 'Ceremony', icon: Sparkles },
   committee: { label: 'Committee session', icon: Gavel },
   break: { label: 'Break', icon: Coffee },
@@ -15,6 +17,7 @@ const categories = {
 
 const filters: readonly { value: ScheduleCategory | 'all'; label: string }[] = [
   { value: 'all', label: 'All sessions' },
+  { value: 'preparation', label: 'Preparation' },
   { value: 'ceremony', label: 'Ceremonies' },
   { value: 'committee', label: 'Committee' },
   { value: 'break', label: 'Breaks' },
@@ -26,13 +29,14 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
   const [category, setCategory] = useState<ScheduleCategory | 'all'>('all');
   const [expandedByDay, setExpandedByDay] = useState<Record<string, Record<string, boolean>>>({});
   const day = days.find((item) => item.id === selectedId) ?? days[0];
+  const isJourney = day?.kind === 'journey';
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const daysRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
   const timelineRef = useRef<HTMLOListElement>(null);
   const previousPositions = useRef(new Map<string, number>());
   const hasUnconfirmedDetails = day?.events.some((event) => !event.startTime || !event.endTime || !event.venue);
-  const visibleEvents = day?.events.filter((event) => category === 'all' || event.category === category) ?? [];
+  const visibleEvents = day?.events.filter((event) => isJourney || category === 'all' || event.category === category) ?? [];
   const sectionRef = useScrollEntrance<HTMLElement>(`${day?.id ?? ''}-${category}`);
 
   useLayoutEffect(() => {
@@ -121,14 +125,15 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
     <section ref={sectionRef} id="schedule" className="conference-section schedule-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
         <div data-entrance="heading">
-          <SectionHeading id={`${uid}-heading`} number="01" eyebrow="The conference programme"
+          <SectionHeading id={`${uid}-heading`} number="01" eyebrow={isJourney ? 'The delegate journey' : 'The conference programme'}
             title={<>Conference <em>Schedule</em></>}
-            description="From the first exchange of ideas to a shared resolution. Explore the rhythm of the conference." />
+            description="From registration and research to deliberation, negotiation, and reflection. Explore the stages of your Model United Nations experience at NIT Raipur." />
         </div>
 
         {day ? (
-          <div className="schedule-programme">
-            <div ref={daysRef} className="schedule-days" role="tablist" aria-label="Conference days" aria-orientation="horizontal">
+          <div className={`schedule-programme${isJourney ? ' schedule-programme--journey' : ''}`}>
+            {isJourney && <ScheduleWave />}
+            {!isJourney && <div ref={daysRef} className="schedule-days" role="tablist" aria-label="Conference days" aria-orientation="horizontal">
               {days.map((item, index) => (
                 <button key={item.id} ref={(node) => { tabRefs.current[index] = node; }} type="button"
                   role="tab" id={`${uid}-tab-${item.id}`} aria-selected={day.id === item.id}
@@ -140,23 +145,23 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                 </button>
               ))}
               <span ref={indicatorRef} className="schedule-day-indicator" aria-hidden="true" />
-            </div>
+            </div>}
 
-            <div key={day.id} id={`${uid}-panel`} role="tabpanel" aria-labelledby={`${uid}-tab-${day.id}`} tabIndex={0} className="schedule-panel">
+            <div key={day.id} id={`${uid}-panel`} role={isJourney ? 'region' : 'tabpanel'} aria-labelledby={isJourney ? `${uid}-panel-title` : `${uid}-tab-${day.id}`} tabIndex={isJourney ? undefined : 0} className="schedule-panel">
               <div className="schedule-panel-heading">
-                <h3>{day.subtitle}</h3>
-                <p role="status" aria-live="polite" aria-atomic="true">{category === 'all' ? day.events.length : `${visibleEvents.length} of ${day.events.length}`} {day.isPreview ? 'proposed ' : ''}{day.events.length === 1 ? 'session' : 'sessions'}</p>
+                <h3 id={`${uid}-panel-title`}>{day.subtitle}</h3>
+                <p role="status" aria-live="polite" aria-atomic="true">{isJourney ? `${day.events.length} ${day.events.length === 1 ? 'step' : 'steps'}` : <>{category === 'all' ? day.events.length : `${visibleEvents.length} of ${day.events.length}`} {day.isPreview ? 'proposed ' : ''}{day.events.length === 1 ? 'session' : 'sessions'}</>}</p>
               </div>
 
               {(day.isPreview || hasUnconfirmedDetails) && (
                 <div className="schedule-note">
                   <CalendarDays size={16} aria-hidden="true" />
-                  <p>{day.isPreview ? 'Illustrative programme. Dates and sessions await confirmation. ' : ''}TBA means details are still to be announced.</p>
+                  <p>{isJourney ? 'This is the delegate journey. Conference dates, session timings, and venues will be published once confirmed.' : <>{day.isPreview ? 'Illustrative programme. Dates and sessions await confirmation. ' : ''}TBA means details are still to be announced.</>}</p>
                 </div>
               )}
 
               {day.events.length > 0 && <div className="schedule-controls">
-                <div className="schedule-filters" role="group" aria-label="Filter sessions by category">
+                {!isJourney && <div className="schedule-filters" role="group" aria-label="Filter sessions by category">
                   {filters.map((filter) => {
                     const count = filter.value === 'all' ? day.events.length : day.events.filter((event) => event.category === filter.value).length;
                     return <button key={filter.value} type="button" data-category={filter.value}
@@ -165,7 +170,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                       {filter.label}<span className="schedule-filter-count" aria-hidden="true">{count}</span>
                     </button>;
                   })}
-                </div>
+                </div>}
                 {visibleEvents.length > 1 && <button type="button" className="schedule-expand-all"
                   aria-controls={`${uid}-timeline`} onClick={toggleAll}>
                   {allExpanded ? 'Collapse all' : 'Expand all'}<ChevronDown size={15} className={allExpanded ? 'is-open' : ''} aria-hidden="true" />
@@ -173,7 +178,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
               </div>}
 
               {visibleEvents.length ? <>
-                <div className="schedule-column-headings" aria-hidden="true"><span>Time</span><span>Sessions & venues</span></div>
+                <div className="schedule-column-headings" aria-hidden="true"><span>{isJourney ? 'Step' : 'Time'}</span><span>{isJourney ? 'Your delegate journey' : 'Sessions & venues'}</span></div>
                 <ol ref={timelineRef} id={`${uid}-timeline`} className="schedule-timeline">
                   {visibleEvents.map((event, index) => {
                     const { icon: Icon, label } = categories[event.category];
@@ -183,13 +188,13 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                     return (
                       <li key={event.id} data-session-id={event.id} data-entrance="session" style={{ '--session-delay': `${Math.min(index, 3) * 90}ms` } as CSSProperties}
                         className={`schedule-event schedule-event--${event.category}${expanded ? ' is-expanded' : ''}`}>
-                        <div className="schedule-event-time" data-unconfirmed={!event.startTime} role="group" aria-label={`${event.title} timing`}>
-                          <span className="schedule-start-time">{event.startTime || 'TBA'}</span>
+                        <div className="schedule-event-time" data-unconfirmed={!isJourney && !event.startTime} role="group" aria-label={isJourney ? `Step ${event.step}: ${event.title}` : `${event.title} timing`}>
+                          <span className="schedule-start-time">{isJourney ? String(event.step ?? index + 1).padStart(2, '0') : event.startTime || 'TBA'}</span>
                           {(event.startTime || event.endTime) && <span className="schedule-end-time">to {event.endTime || 'TBA'}</span>}
                         </div>
                         <span className="schedule-marker" aria-hidden="true"><Icon size={15} /></span>
                         <article className="schedule-event-content">
-                          <p className="schedule-category">{label}</p>
+                          {!isJourney && <p className="schedule-category">{label}</p>}
                           <h4 className="schedule-event-title">
                             <button type="button" id={triggerId} className="schedule-session-toggle" aria-expanded={expanded}
                               aria-controls={detailsId} aria-label={`${expanded ? 'Hide' : 'Show'} details for ${event.title}`} onClick={() => toggleEvent(event.id)}>
@@ -197,7 +202,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                               <span className="schedule-session-action" aria-hidden="true"><span>{expanded ? 'Hide details' : 'View details'}</span><ChevronDown size={18} className={expanded ? 'is-open' : ''} /></span>
                             </button>
                           </h4>
-                          <p className="schedule-event-venue"><MapPin size={14} aria-hidden="true" /><span className="conference-sr-only">Venue: </span>{event.venue || 'TBA'}</p>
+                          {!isJourney && <p className="schedule-event-venue"><MapPin size={14} aria-hidden="true" /><span className="conference-sr-only">Venue: </span>{event.venue || 'TBA'}</p>}
                           <div id={detailsId} className="schedule-event-details" role="region" aria-labelledby={triggerId} aria-hidden={!expanded} data-expanded={expanded}>
                             <div className="schedule-event-details-inner"><p className="schedule-event-description">{event.description}</p></div>
                           </div>

@@ -1,4 +1,4 @@
-export type ScheduleCategory = 'ceremony' | 'committee' | 'break';
+export type ScheduleCategory = 'preparation' | 'ceremony' | 'committee' | 'break';
 
 export interface ScheduleEvent {
   id: string;
@@ -9,6 +9,7 @@ export interface ScheduleEvent {
   venue: string | null;
   description: string;
   category: ScheduleCategory;
+  step?: number;
 }
 
 export interface ScheduleDay {
@@ -17,6 +18,7 @@ export interface ScheduleDay {
   subtitle: string;
   /** Keep true until the programme has been approved by the organizers. */
   isPreview: boolean;
+  kind?: 'journey';
   events: readonly ScheduleEvent[];
 }
 

@@ -1,5 +1,10 @@
 .schedule-section { background: var(--navy); border-top: 1px solid var(--border-subtle); }
 .schedule-programme { --schedule-time-width: 130px; --schedule-column-gap: 20px; --schedule-marker-offset: 44px; overflow: hidden; background: #0d233e; border: 1px solid var(--border-active); border-radius: 5px; }
+.schedule-programme--journey { --schedule-time-width: 64px; }
+.schedule-wave { height: 64px; overflow: hidden; color: var(--gold); border-bottom: 1px solid var(--border-subtle); contain: paint; pointer-events: none; }
+.schedule-wave-track { display: block; width: 200%; height: 100%; animation: schedule-wave-drift 18s linear infinite; animation-play-state: paused; }
+.schedule-wave[data-animate='true'] .schedule-wave-track { animation-play-state: running; }
+@keyframes schedule-wave-drift { to { transform: translate3d(-50%, 0, 0); } }
 .schedule-days { position: relative; display: flex; align-items: stretch; gap: 36px; padding-inline: 36px; overflow-x: auto; border-bottom: 1px solid var(--border-subtle); }
 .schedule-day { position: relative; flex: 0 0 auto; min-width: 132px; padding: 20px 0 18px; color: #becbdb; text-align: left; transition: color 180ms; }
 .schedule-day-indicator { position: absolute; left: 0; bottom: 0; width: 1px; height: 2px; background: var(--gold); transform: scaleX(0); transform-origin: left; pointer-events: none; }
@@ -75,9 +80,11 @@
 .schedule-panel .conference-empty h4 { margin-bottom: 12px; font-size: 1.2rem; }
 @media (prefers-reduced-motion: reduce) {
   .schedule-event-content { transform: none !important; }
+  .schedule-wave-track { animation: none !important; transform: none; }
 }
 @media (max-width: 760px) {
   .schedule-programme { --schedule-time-width: 78px; --schedule-column-gap: 14px; }
+  .schedule-programme--journey { --schedule-time-width: 48px; }
   .schedule-days { padding-inline: 24px; gap: 28px; }
   .schedule-panel { padding: 26px 24px 0; }
   .schedule-footer { padding-inline: 24px; }

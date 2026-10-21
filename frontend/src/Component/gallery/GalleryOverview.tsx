@@ -49,7 +49,7 @@ export default function GalleryOverview({ images, selectedId, onSelect, onClose 
     <dialog ref={dialogRef} className="gallery-overview" data-lenis-prevent aria-labelledby={`${uid}-title`}
       onCancel={(event) => { event.preventDefault(); requestClose(); }}>
       <header className="gallery-overview-header">
-        <div><p className="gallery-overview-eyebrow">LIT-MUN / In focus</p><h2 id={`${uid}-title`}>The full gallery</h2><p className="gallery-overview-count">{images.length} photographs. Choose a moment to see it up close.</p></div>
+        <div><p className="gallery-overview-eyebrow">NITRRMUN In focus</p><h2 id={`${uid}-title`}>The full gallery</h2><p className="gallery-overview-count">{images.length} photographs. Choose a moment to see it up close.</p></div>
         <button type="button" className="gallery-overview-close" onClick={requestClose} aria-label="Close full gallery"><X size={24} aria-hidden="true" /></button>
       </header>
       <ul ref={gridRef} className="gallery-overview-grid">

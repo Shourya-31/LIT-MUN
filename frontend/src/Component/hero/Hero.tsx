@@ -154,8 +154,7 @@ export const Hero: React.FC<HeroProps> = () => {
       <div className="hero-layout">
         <div className="hero-copy">
           <p className="hero-eyebrow" data-hero-eyebrow>
-            <span className="hero-eyebrow-line" aria-hidden="true" />
-            NITRRMUN 2026–27 <span aria-hidden="true">/</span> NIT Raipur
+            NITRRMUN 2026–27  NIT Raipur
           </p>
 
           <h1 className="hero-title" id="hero-title" aria-label="Model United Nations">

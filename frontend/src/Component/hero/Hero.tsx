@@ -6,18 +6,19 @@ import SplitType from 'split-type';
 import { ArrowRight } from 'lucide-react';
 import { useMagneticPointer } from '../../hooks/useMagneticPointer';
 import './Hero.css';
+import NITRRMUNdark from "../../assets/NITRRMUN-dark.png";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 interface HeroProps {
-  onRegisterClick: () => void;
+  onRegisterClick?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onRegisterClick }) => {
+export const Hero: React.FC<HeroProps> = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLSpanElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const registerButtonRef = useMagneticPointer<HTMLButtonElement>(0.07);
+  const aboutButtonRef = useMagneticPointer<HTMLAnchorElement>(0.07);
   const spotlightFrameRef = useRef<number | null>(null);
   const spotlightPositionRef = useRef({ x: 0, y: 0 });
   const spotlightEnabledRef = useRef(false);
@@ -154,7 +155,7 @@ export const Hero: React.FC<HeroProps> = ({ onRegisterClick }) => {
         <div className="hero-copy">
           <p className="hero-eyebrow" data-hero-eyebrow>
             <span className="hero-eyebrow-line" aria-hidden="true" />
-            LIT-MUN 2026–27 <span aria-hidden="true">/</span> NIT Raipur
+            NITRRMUN 2026–27 <span aria-hidden="true">/</span> NIT Raipur
           </p>
 
           <h1 className="hero-title" id="hero-title" aria-label="Model United Nations">
@@ -162,24 +163,19 @@ export const Hero: React.FC<HeroProps> = ({ onRegisterClick }) => {
           </h1>
 
           <p className="hero-description" data-hero-copy>
-            Step into the global arena. Engage in meaningful debates, build lasting connections, and be a part of a movement that shapes a better tomorrow.
+            Step into the realm of international diplomacy, where nations find common grounds to debate deliberately, perspectives that shape world policy and dialogues that pave way for collective progress, Model United Nations at NIT Raipur invites aspiring diplomats, critical thinkers and young leaders to engage with pressing global challenges through informed debate, strategic negotiation, and a consensus-driven decision-making.
           </p>
 
           <div className="hero-actions" data-hero-actions>
-            <button
-              ref={registerButtonRef}
-              type="button"
+            <a
+              ref={aboutButtonRef}
               className="hero-primary-action magnetic-button"
-              onClick={onRegisterClick}
+              href="#about"
             >
               <span className="button-label">
-              Register Now
+                About the Conference
               </span>
               <ArrowRight size={18} aria-hidden="true" />
-            </button>
-            <a className="hero-secondary-action" href="#about">
-              About the conference
-              <ArrowRight size={17} aria-hidden="true" />
             </a>
           </div>
         </div>
@@ -188,17 +184,16 @@ export const Hero: React.FC<HeroProps> = ({ onRegisterClick }) => {
           <img
             ref={imageRef}
             className="hero-image"
-            src="/images/Elegant%20LIT-MUN%20Global%20Emblem.png"
-            alt="Elegant gold and ivory LIT-MUN Global Emblem"
+            src={NITRRMUNdark}
+            alt="Official NITRRMUN Global Emblem"
             loading="eager"
           />
           <span className="hero-image-frame" aria-hidden="true" />
           <figcaption className="hero-image-caption">
-            {/* <span>LIT-MUN Global Emblem</span> */}
+            {/* <span>NITRRMUN Global Emblem</span> */}
           </figcaption>
         </figure>
       </div>
-      <span className="hero-index" aria-hidden="true">01 — 06</span>
     </section>
   );
 };

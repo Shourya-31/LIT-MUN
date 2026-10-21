@@ -3,29 +3,23 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import SplitType from 'split-type';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import { useMagneticPointer } from '../../hooks/useMagneticPointer';
+import { ArrowUpRight } from 'lucide-react';
 import { Hero, About, Committees, FAQ, Contact } from '../../Component';
 import './LandingPage.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 interface LandingPageProps {
-  onNavigateToRegistration: () => void;
+  onNavigateToRegistration?: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistration }) => {
+export const LandingPage: React.FC<LandingPageProps> = () => {
   const pageRef = useRef<HTMLElement>(null);
   const progressRef = useRef<HTMLSpanElement>(null);
-  const closingTitleRef = useRef<HTMLHeadingElement>(null);
-  const closingButtonRef = useMagneticPointer<HTMLButtonElement>(0.065);
 
   useGSAP(() => {
     const page = pageRef.current;
     if (!page || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const closingTitle = closingTitleRef.current;
-    const closingTitleSplit = closingTitle ? new SplitType(closingTitle, { types: 'words' }) : null;
 
     const connection = (navigator as Navigator & {
       connection?: { saveData?: boolean; effectiveType?: string };
@@ -155,17 +149,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
       gsap.fromTo(
         aboutImage,
         {
-          clipPath: 'polygon(0 0, 0 0, 0 7%, 0 100%, 0 100%, 0 94%)',
-          scale: 1.04,
+          autoAlpha: 0,
+          scale: 0.94,
+          y: 20,
         },
         {
-          clipPath: 'polygon(0 0, 94% 0, 100% 7%, 100% 100%, 5% 100%, 0 94%)',
+          autoAlpha: 1,
           scale: 1,
-          duration: 0.95,
-          ease: 'power2.inOut',
+          y: 0,
+          duration: 0.85,
+          ease: 'power2.out',
           scrollTrigger: {
             trigger: '[data-about-image]',
-            start: 'top 76%',
+            start: 'top 78%',
             once: true,
           },
         },
@@ -210,34 +206,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
         );
     }
 
-    const closingSection = page.querySelector<HTMLElement>('[data-closing-cta]');
-    const closingWords = closingTitleSplit?.words ?? [];
-    if (closingSection && closingWords.length) {
-      gsap.timeline({
-        scrollTrigger: {
-          trigger: closingSection,
-          start: 'top 82%',
-          once: true,
-        },
-      })
-        .fromTo(
-          closingWords,
-          { autoAlpha: 0, y: 18 },
-          { autoAlpha: 1, y: 0, duration: 0.52, stagger: 0.045, ease: 'power2.out' },
-        )
-        .fromTo(
-          '[data-closing-copy]',
-          { y: 12 },
-          { y: 0, duration: 0.46, ease: 'power2.out' },
-          '-=0.24',
-        )
-        .fromTo(
-          '[data-closing-button]',
-          { y: 10 },
-          { y: 0, duration: 0.42, ease: 'power2.out' },
-          '-=0.18',
-        );
-    }
+
 
     if (progressRef.current) {
       gsap.to(progressRef.current, {
@@ -257,7 +226,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
       if (lenis) gsap.ticker.remove(animateLenis);
       document.removeEventListener('visibilitychange', pauseWhenHidden);
       lenis?.destroy();
-      closingTitleSplit?.revert();
       aboutImageMotion.revert();
     };
   }, { scope: pageRef });
@@ -267,41 +235,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
       <div className="page-progress" aria-hidden="true">
         <span ref={progressRef} />
       </div>
-      <Hero onRegisterClick={onNavigateToRegistration} />
+      <Hero />
       <About />
       <Committees />
       <FAQ />
       <Contact />
-      <section className="landing-registration-cta" data-closing-cta>
-        <h2 ref={closingTitleRef}>Ready to Represent Your Nation?</h2>
-        <p data-closing-copy>
-          Join diplomats and scholars across the nation at LIT-MUN 2026. Secure your committee appointment today.
-        </p>
-        <button
-          ref={closingButtonRef}
-          className="landing-registration-button magnetic-button"
-          data-closing-button
-          type="button"
-          onClick={onNavigateToRegistration}
-        >
-          <span className="button-label">Open Delegate Registration</span>
-          <ArrowRight size={17} aria-hidden="true" />
-        </button>
-      </section>
       <footer className="landing-footer" data-reveal data-reveal-footer>
         <div className="landing-footer-inner">
           <div>
-            <p className="landing-footer-title">LIT Model United Nations</p>
-            <p>Organized by the LITERATI (Literary Society, NIT Raipur)</p>
+            <p className="landing-footer-title">NITRRMUN 2026–27</p>
+            <p>National Institute of Technology Raipur Model United Nations</p>
           </div>
           <nav className="landing-footer-links" aria-label="Footer">
             <a href="#contact">Contact</a>
-            <a href="mailto:litfest@nitrr.ac.in">Email</a>
-            <a href="https://instagram.com/literary.nitrr" target="_blank" rel="noopener noreferrer">
+            <a href="mailto:nitrrmun@nitrr.ac.in">Email</a>
+            <a href="https://instagram.com/nitrrmun" target="_blank" rel="noopener noreferrer">
               Instagram <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           </nav>
-          <p className="landing-footer-copy">© 2026 LIT Model United Nations Conference. All rights reserved.</p>
+          <p className="landing-footer-copy">© 2026 NITRRMUN Conference, NIT Raipur. All rights reserved.</p>
         </div>
       </footer>
     </main>

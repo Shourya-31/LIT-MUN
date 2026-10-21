@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SplitType from 'split-type';
 import { ArrowRight } from 'lucide-react';
 import { useMagneticPointer } from '../../hooks/useMagneticPointer';
+import GridScan from '../animations/GridScan';
 import './Hero.css';
 import NITRRMUNdark from "../../assets/NITRRMUN-dark.png";
 
@@ -151,6 +152,19 @@ export const Hero: React.FC<HeroProps> = () => {
       onPointerMove={handlePointerMove}
       aria-labelledby="hero-title"
     >
+      <div className="hero-grid-scan" aria-hidden="true">
+        <GridScan
+          linesColor="#47617e"
+          scanColor="#d9b56d"
+          cells={8}
+          depth={3}
+          scanDuration={3.2}
+          scanDelay={2.4}
+          clickEffect="none"
+          points
+          interactive
+        />
+      </div>
       <div className="hero-layout">
         <div className="hero-copy">
           <p className="hero-eyebrow" data-hero-eyebrow>

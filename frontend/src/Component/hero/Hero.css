@@ -38,7 +38,18 @@
   opacity: 0.4;
 }
 
+.hero-grid-scan {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  opacity: 0.56;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
 .hero-layout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   align-items: center;

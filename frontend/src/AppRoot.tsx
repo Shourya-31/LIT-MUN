@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import App from './App';
+import CustomCursor from './Component/animations/CustomCursor';
 import LoadingScreen from './Component/loading/LoadingScreen';
 
 const AppRoot: React.FC = () => {
@@ -23,6 +24,7 @@ const AppRoot: React.FC = () => {
 
   return (
     <div className="application-root">
+      <CustomCursor />
       <div ref={appContentRef} aria-hidden={isLoading}>
         <App />
       </div>

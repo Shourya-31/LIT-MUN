@@ -1,0 +1,49 @@
+.custom-cursor {
+  --cursor-x: -100px;
+  --cursor-y: -100px;
+  position: fixed;
+  z-index: 10000;
+  inset: 0 auto auto 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.custom-cursor--visible {
+  opacity: 1;
+}
+
+.custom-cursor__glint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  transform: translate3d(var(--cursor-x), var(--cursor-y), 0) translate(-50%, -50%) scale(0.7);
+  background: #d9b56d;
+}
+
+.custom-cursor__glint--near {
+  width: 5px;
+  height: 5px;
+  opacity: 0.58;
+  filter: blur(1px);
+  transition: transform 100ms ease-out;
+}
+
+.custom-cursor__glint--middle {
+  width: 4px;
+  height: 4px;
+  opacity: 0.34;
+  filter: blur(1.5px);
+  transition: transform 190ms ease-out;
+}
+
+.custom-cursor__glint--far {
+  width: 3px;
+  height: 3px;
+  opacity: 0.2;
+  filter: blur(2px);
+  transition: transform 280ms ease-out;
+}

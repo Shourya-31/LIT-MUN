@@ -54,11 +54,55 @@
   }
 
   button {
+    position: relative;
+    isolation: isolate;
     font-family: inherit;
     cursor: pointer;
     border: none;
     outline: none;
     background: none;
+  }
+
+  button::after {
+    position: absolute;
+    z-index: 1;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--star-border-angle, 0deg),
+      rgba(217, 181, 109, 0.2) 0deg,
+      rgba(217, 181, 109, 0.2) 260deg,
+      rgba(217, 181, 109, 0.45) 300deg,
+      #d9b56d 330deg,
+      #f6f1e8 345deg,
+      #d9b56d 360deg
+    );
+    content: '';
+    pointer-events: none;
+    opacity: 0.72;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: star-border-orbit 4s linear infinite;
+    transition: opacity 180ms ease, filter 180ms ease;
+  }
+
+  button:hover::after,
+  button:focus-visible::after {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgba(217, 181, 109, 0.55));
+  }
+
+  button:active::after {
+    animation: star-border-orbit 4s linear infinite, star-border-click-pulse 650ms ease-out;
+  }
+
+  button:disabled::after {
+    animation-play-state: paused;
+    opacity: 0.3;
+    filter: none;
   }
 
   input, select, textarea {
@@ -88,5 +132,35 @@
   :focus-visible {
     outline: 2px solid var(--soft-fawn);
     outline-offset: 2px;
+  }
+}
+
+@property --star-border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes star-border-orbit {
+  to {
+    --star-border-angle: 360deg;
+  }
+}
+
+@keyframes star-border-click-pulse {
+  from {
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(217, 181, 109, 0.8));
+  }
+
+  to {
+    opacity: 0.72;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button::after {
+    animation: none;
   }
 }

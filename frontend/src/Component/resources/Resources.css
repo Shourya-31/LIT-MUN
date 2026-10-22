@@ -1,4 +1,7 @@
 .resources-section { background: #102640; border-block: 1px solid var(--border-subtle); }
+.resources-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; margin-bottom: 44px; }
+.resources-heading .conference-heading { flex: 1; min-width: 0; margin-bottom: 0; }
+.resources-secretariat-link { flex-shrink: 0; align-self: flex-end; margin-top: 0; white-space: nowrap; }
 .resource-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .resource-card { display: flex; flex-direction: column; min-width: 0; padding: 26px; border: 1px solid rgba(212, 175, 105, 0.19); border-radius: 5px; background: var(--navy); animation: conference-enter 250ms ease-out; transition: border-color 220ms, transform 220ms; }
 .resource-card:hover { border-color: rgba(212, 175, 105, 0.65); transform: translateY(-3px); }
@@ -36,6 +39,7 @@
 .resource-filetype { margin-left: auto; font-size: 0.65rem; color: #c0cad8; text-transform: uppercase; }
 @media (pointer: coarse) { .resource-read, .resource-view { min-height: 44px; } .resource-view { width: 44px; } }
 @media (max-width: 1000px) { .resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .resources-heading { flex-direction: column; align-items: stretch; gap: 18px; margin-bottom: 30px; } }
 @media (max-width: 600px) {
   .resource-grid { grid-template-columns: minmax(0, 1fr); }
   .resource-card { padding: 24px; }

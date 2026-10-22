@@ -126,6 +126,7 @@ const TargetCursor = ({
     let lastLabel = '';
     let lastColor = '';
     let lastScope: HTMLElement | null = null;
+    let blockedByDialog = false;
 
     const scopeOf = () => resolveElement(settingsRef.current.container);
 
@@ -139,7 +140,7 @@ const TargetCursor = ({
       }
       const selector = scope ? '[data-target-cursor-scope]' : 'html';
       const rule =
-        currentSettings.hideDefaultCursor && pointer.inside
+        currentSettings.hideDefaultCursor && pointer.inside && !blockedByDialog
           ? `${selector}, ${selector} * { cursor: none !important; } ${selector} input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]), ${selector} textarea, ${selector} [contenteditable="true"] { cursor: text !important; }`
           : '';
       if (style.textContent !== rule) style.textContent = rule;
@@ -298,7 +299,7 @@ const TargetCursor = ({
     };
 
     const wake = () => {
-      if (!raf) raf = requestAnimationFrame(frame);
+      if (!raf && !blockedByDialog) raf = requestAnimationFrame(frame);
     };
     wakeRef.current = () => {
       hideCursor();
@@ -315,6 +316,7 @@ const TargetCursor = ({
 
     const onPointerMove = (event: PointerEvent) => {
       if (event.pointerType && event.pointerType !== 'mouse') return;
+      if (blockedByDialog) return;
       pointer.x = event.clientX;
       pointer.y = event.clientY;
       const inside = insideScope(pointer.x, pointer.y, event.target);
@@ -328,11 +330,13 @@ const TargetCursor = ({
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType && event.pointerType !== 'mouse') return;
+      if (blockedByDialog) return;
       pointer.pressed = true;
       wake();
     };
 
     const onPointerUp = () => {
+      if (blockedByDialog) return;
       pointer.pressed = false;
       wake();
     };
@@ -351,12 +355,48 @@ const TargetCursor = ({
       wake();
     };
 
+    const updateCursorLayer = () => {
+      const galleryOpen = Boolean(document.querySelector('.gallery-overview[open], .gallery-lightbox[open]'));
+      let inTopLayer = false;
+      // A manual popover paints above native dialogs without taking focus or
+      // intercepting clicks. Reopen it when a nested dialog changes that order.
+      if (typeof root.showPopover === 'function' && typeof root.hidePopover === 'function') {
+        try {
+          if (root.matches(':popover-open')) root.hidePopover();
+          root.setAttribute('popover', 'manual');
+          root.showPopover();
+          inTopLayer = root.matches(':popover-open');
+        } catch {
+          root.removeAttribute('popover');
+        }
+      }
+      // Older browsers retain a visible native pointer inside gallery dialogs.
+      blockedByDialog = galleryOpen && !inTopLayer;
+      root.hidden = blockedByDialog;
+      pointer.pressed = false;
+      if (blockedByDialog) {
+        onLeave();
+        cancelAnimationFrame(raf);
+        raf = 0;
+        last = 0;
+        presence.x = 0;
+        presence.v = 0;
+        root.style.opacity = '0';
+      } else {
+        lockOn(pointer.inside ? findTarget(pointer.x, pointer.y) : null);
+      }
+      hideCursor();
+      wake();
+    };
+
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
     window.addEventListener('pointerup', onPointerUp, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true, capture: true });
     document.documentElement.addEventListener('pointerleave', onLeave);
     window.addEventListener('blur', onLeave);
+    window.addEventListener('litmun:gallery-layer-change', updateCursorLayer);
+    updateCursorLayer();
 
     return () => {
       cancelAnimationFrame(raf);
@@ -367,8 +407,14 @@ const TargetCursor = ({
       window.removeEventListener('scroll', onScroll, { capture: true });
       document.documentElement.removeEventListener('pointerleave', onLeave);
       window.removeEventListener('blur', onLeave);
+      window.removeEventListener('litmun:gallery-layer-change', updateCursorLayer);
       lastScope?.removeAttribute('data-target-cursor-scope');
       style.remove();
+      try {
+        if (typeof root.hidePopover === 'function' && root.matches(':popover-open')) root.hidePopover();
+      } catch { /* An unsupported or already-closed popover needs no cleanup. */ }
+      root.removeAttribute('popover');
+      root.hidden = false;
     };
   }, [host]);
 

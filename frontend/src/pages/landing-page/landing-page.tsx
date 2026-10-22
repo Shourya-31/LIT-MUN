@@ -258,7 +258,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
         <Schedule />
       </FadeContent>
       <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
-        <Secretariat />
+        <Secretariat resourcesHref="#resources" />
       </FadeContent>
       <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
         <Gallery />

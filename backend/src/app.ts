@@ -34,24 +34,49 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(helmet);
   await app.register(cookie);
   await app.register(jwt, { secret: env.JWT_ACCESS_SECRET });
+
   await app.register(rateLimit, {
     max: 120,
     timeWindow: '15 minutes',
+
+    allowList: (request) => {
+      const pathname = request.url.split('?')[0] ?? '/';
+      const isReadRequest =
+        request.method === 'GET' || request.method === 'HEAD';
+
+      if (!isReadRequest) return false;
+
+      const isHealthCheck = pathname === '/api/v1/health';
+
+      const isFrontendRequest =
+        !pathname.startsWith('/api/') &&
+        pathname !== '/api' &&
+        !pathname.startsWith('/docs');
+
+      return isFrontendRequest || isHealthCheck;
+    },
+
     keyGenerator: (request) => {
+      const forwardedFor = request.headers['x-forwarded-for'];
+
+      const clientIp = typeof forwardedFor === 'string'
+        ? forwardedFor.split(',')[0]?.trim()
+        : Array.isArray(forwardedFor)
+          ? forwardedFor[0]?.split(',')[0]?.trim()
+          : undefined;
+
+      if (clientIp) return clientIp;
+
       const cfIp = request.headers['cf-connecting-ip'];
 
       if (typeof cfIp === 'string' && cfIp.trim()) {
         return cfIp.trim();
       }
 
-      const forwardedFor = request.headers['x-forwarded-for'];
-      const clientIp = typeof forwardedFor === 'string'
-        ? forwardedFor.split(',')[0]?.trim()
-        : undefined;
-
-      return clientIp || request.ip;
+      return request.ip;
     },
   });
+
   await app.register(swagger, {
     openapi: {
       info: { title: 'LIT-MUN API', version: '1.0.0' },

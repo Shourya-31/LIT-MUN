@@ -28,10 +28,8 @@
 .schedule-filters button:hover { color: var(--ivory); border-color: var(--gold); }
 .schedule-filters button[aria-pressed='true'] { color: var(--gold); border-color: var(--gold); background: rgba(212, 175, 105, 0.07); }
 .schedule-filter-count { padding-left: 8px; border-left: 1px solid rgba(130, 145, 168, 0.3); font-size: 0.65rem; font-variant-numeric: tabular-nums; }
-.schedule-expand-all { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 9px 0; color: var(--gold); font-size: 0.73rem; white-space: nowrap; }
-.schedule-expand-all:hover { color: var(--ivory); }
-.schedule-expand-all svg, .schedule-session-action > svg { flex-shrink: 0; transition: transform 200ms ease; }
-.schedule-expand-all .is-open, .schedule-session-action .is-open { transform: rotate(180deg); }
+.schedule-session-action > svg { flex-shrink: 0; transition: transform 200ms ease; }
+.schedule-session-action .is-open { transform: rotate(180deg); }
 .schedule-column-headings { display: grid; grid-template-columns: var(--schedule-time-width) 32px minmax(0, 1fr); column-gap: var(--schedule-column-gap); padding-bottom: 15px; border-bottom: 1px solid var(--border-active); color: #9fb0c6; text-transform: uppercase; font-size: 0.63rem; letter-spacing: 0.15em; }
 .schedule-column-headings > span:last-child { grid-column: 3; }
 .schedule-timeline { position: relative; list-style: none; margin: 0; padding: 0; }
@@ -59,7 +57,7 @@
 .schedule-event-title { font-size: clamp(1.05rem, 2vw, 1.3rem); line-height: 1.5; letter-spacing: 0; font-weight: 500; overflow-wrap: anywhere; }
 .schedule-session-toggle { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; width: 100%; min-height: 44px; padding: 4px 0; text-align: left; color: inherit; font: inherit; letter-spacing: inherit; }
 .schedule-session-toggle:hover .schedule-session-title-text { color: var(--gold); }
-.schedule-session-action { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0; padding-top: 4px; color: #b6c5d7; font: 500 0.67rem/1.6 var(--font-body); letter-spacing: 0; }
+.schedule-session-action { display: inline-flex; align-items: center; justify-content: flex-end; flex-shrink: 0; padding-top: 4px; color: #b6c5d7; }
 .schedule-event.is-expanded .schedule-session-action { color: var(--gold); }
 .schedule-event.is-expanded .schedule-marker { border-color: var(--gold); }
 .schedule-event-details { display: grid; grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows 260ms ease, opacity 180ms ease, visibility 0s 260ms; }
@@ -74,8 +72,6 @@
 .schedule-event--break .schedule-marker { color: #b6c5d7; border-color: rgba(130, 145, 168, 0.45); }
 .schedule-event--break .schedule-event-title { font-family: var(--font-body); font-size: 1rem; }
 .schedule-event--break .schedule-event-description { color: #afbed1; }
-.schedule-footer { display: flex; justify-content: flex-end; border-top: 1px solid var(--border-subtle); padding: 16px 36px 20px; }
-.schedule-footer .conference-text-button { margin-top: 0; font-size: 0.78rem; }
 .schedule-panel .conference-empty { margin-block: 20px 30px; }
 .schedule-panel .conference-empty h4 { margin-bottom: 12px; font-size: 1.2rem; }
 @media (prefers-reduced-motion: reduce) {
@@ -86,11 +82,9 @@
   .schedule-programme { --schedule-time-width: 78px; --schedule-column-gap: 14px; }
   .schedule-days { padding-inline: 24px; gap: 28px; }
   .schedule-panel { padding: 26px 24px 0; }
-  .schedule-footer { padding-inline: 24px; }
   .schedule-panel-heading { align-items: flex-start; }
   .schedule-panel-heading > p { padding-top: 4px; font-size: 0.67rem; }
   .schedule-controls { flex-direction: column; gap: 8px; }
-  .schedule-session-action > span { display: none; }
 }
 @media (max-width: 480px) {
   .schedule-programme { --schedule-time-width: 52px; --schedule-column-gap: 10px; --schedule-marker-offset: 40px; }
@@ -113,5 +107,4 @@
   .schedule-filters { gap: 7px; }
   .schedule-filters button { padding-inline: 10px; font-size: 0.68rem; }
   .schedule-session-toggle { gap: 8px; }
-  .schedule-footer { padding-inline: 18px; justify-content: flex-start; }
 }

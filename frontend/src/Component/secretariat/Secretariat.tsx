@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { FileText, UsersRound } from 'lucide-react';
+import { ArrowUpRight, FileText, UsersRound } from 'lucide-react';
 import SectionHeading from '../conference/SectionHeading';
 import ScrollReveal from '../animations/ScrollReveal';
 import './Secretariat.css';
@@ -12,16 +12,17 @@ const offices = [
   { id: 'delegate-affairs', title: 'Head of Delegate Affairs' },
 ];
 
-export default function Secretariat() {
+export default function Secretariat({ resourcesHref }: { resourcesHref?: string }) {
   const uid = useId();
 
   return (
     <section id="secretariat" className="conference-section secretariat-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
-        <ScrollReveal className="conference-reveal">
-          <SectionHeading id={`${uid}-heading`} number="02" eyebrow="The people behind the conference"
+        <ScrollReveal className={`conference-reveal${resourcesHref ? ' secretariat-heading' : ''}`}>
+          <SectionHeading id={`${uid}-heading`} number="03" eyebrow="The people behind the conference"
             title={<>The <em>Secretariat</em></>}
             description="Letters from the conference leadership, and the organising committee and teams bringing the conference together." />
+          {resourcesHref && <a className="conference-text-button secretariat-resources-link" href={resourcesHref}>Explore Resources <ArrowUpRight size={16} aria-hidden="true" /></a>}
         </ScrollReveal>
 
         <div className="secretariat-letters">

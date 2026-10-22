@@ -87,25 +87,12 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
     return expandedByDay[day.id]?.[eventId] ?? eventId === day.events[0]?.id;
   }
 
-  const allExpanded = visibleEvents.length > 0 && visibleEvents.every((event) => isExpanded(event.id));
-
   function toggleEvent(eventId: string) {
     if (!day) return;
     const expanded = isExpanded(eventId);
     setExpandedByDay((previous) => ({
       ...previous,
       [day.id]: { ...previous[day.id], [eventId]: !expanded },
-    }));
-  }
-
-  function toggleAll() {
-    if (!day) return;
-    setExpandedByDay((previous) => ({
-      ...previous,
-      [day.id]: {
-        ...previous[day.id],
-        ...Object.fromEntries(visibleEvents.map((event) => [event.id, !allExpanded])),
-      },
     }));
   }
 
@@ -125,7 +112,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
     <section ref={sectionRef} id="schedule" className="conference-section schedule-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
         <div data-entrance="heading">
-          <SectionHeading id={`${uid}-heading`} number="01" eyebrow="The conference programme"
+          <SectionHeading id={`${uid}-heading`} number="02" eyebrow="The conference programme"
             title={<>Conference <em>Schedule</em></>}
             description="Follow the full conference itinerary, from the opening ceremony through committee sessions and breaks to the closing ceremony." />
         </div>
@@ -160,8 +147,8 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                 </div>
               )}
 
-              {day.events.length > 0 && <div className="schedule-controls">
-                {!isItinerary && <div className="schedule-filters" role="group" aria-label="Filter sessions by category">
+              {day.events.length > 0 && !isItinerary && <div className="schedule-controls">
+                <div className="schedule-filters" role="group" aria-label="Filter sessions by category">
                   {filters.map((filter) => {
                     const count = filter.value === 'all' ? day.events.length : day.events.filter((event) => event.category === filter.value).length;
                     return <button key={filter.value} type="button" data-category={filter.value}
@@ -170,11 +157,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                       {filter.label}<span className="schedule-filter-count" aria-hidden="true">{count}</span>
                     </button>;
                   })}
-                </div>}
-                {visibleEvents.length > 1 && <button type="button" className="schedule-expand-all"
-                  aria-controls={`${uid}-timeline`} onClick={toggleAll}>
-                  {allExpanded ? 'Collapse all' : 'Expand all'}<ChevronDown size={15} className={allExpanded ? 'is-open' : ''} aria-hidden="true" />
-                </button>}
+                </div>
               </div>}
 
               {visibleEvents.length ? <>
@@ -199,7 +182,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                             <button type="button" id={triggerId} className="schedule-session-toggle" aria-expanded={expanded}
                               aria-controls={detailsId} aria-label={`${expanded ? 'Hide' : 'Show'} details for ${event.title}`} onClick={() => toggleEvent(event.id)}>
                               <span className="schedule-session-title-text">{event.title}</span>
-                              <span className="schedule-session-action" aria-hidden="true"><span>{expanded ? 'Hide details' : 'View details'}</span><ChevronDown size={18} className={expanded ? 'is-open' : ''} /></span>
+                              <span className="schedule-session-action" aria-hidden="true"><ChevronDown size={18} className={expanded ? 'is-open' : ''} /></span>
                             </button>
                           </h4>
                           {(!isItinerary || event.venue) && <p className="schedule-event-venue"><MapPin size={14} aria-hidden="true" /><span className="conference-sr-only">Venue: </span>{event.venue || 'TBA'}</p>}
@@ -216,7 +199,6 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
               ) : <div className="conference-empty"><CalendarDays size={32} aria-hidden="true" /><h4>Sessions to be announced</h4><p>The programme for this day will appear here once it is available.</p></div>}
             </div>
 
-            <div className="schedule-footer"><a className="conference-text-button" href="#secretariat">Meet the Secretariat <ArrowUpRight size={16} aria-hidden="true" /></a></div>
           </div>
         ) : <div className="conference-empty"><CalendarDays size={32} aria-hidden="true" /><h3>Programme to be announced</h3><p>The conference schedule will be shared here once confirmed.</p></div>}
       </div>

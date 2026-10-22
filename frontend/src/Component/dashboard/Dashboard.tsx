@@ -17,48 +17,32 @@ import NITRRMUNcrest from '../../assets/NITRRMUN-crest.png';
 import Schedule from '../schedule/Schedule';
 import Gallery from '../gallery/Gallery';
 import './Dashboard.css';
-
-export interface DelegateDashboardData {
-  fullName: string;
-  email: string;
-  phone: string;
-  institution: string;
-  academicLevel: string;
-  designation?: string;
-  preferredCommittees?: string[];
-  committeeAllotted?: string | null;
-  portfolioAllotted?: string | null;
-}
+import type { DashboardResponse } from '../../lib/api';
 
 interface DashboardProps {
-  data?: Partial<DelegateDashboardData>;
+  data: DashboardResponse | null;
+  isLoading: boolean;
+  errorMessage: string | null;
   onLogout?: () => void;
   onNavigateHome?: () => void;
+  onNavigateToRegistration?: () => void;
 }
-
-const defaultDelegate: DelegateDashboardData = {
-  fullName: 'Atulya Jaiswal',
-  email: 'atulya@example.com',
-  phone: '+91 98765 43210',
-  institution: 'NIT Raipur',
-  academicLevel: 'Undergraduate',
-  designation: 'Delegate',
-  preferredCommittees: ['UNSC', 'UNHRC', 'AIPPM'],
-  committeeAllotted: null,
-  portfolioAllotted: null,
-};
 
 type DashboardTab = 'home' | 'schedule' | 'gallery' | 'secretariat';
 
 export const Dashboard: React.FC<DashboardProps> = ({
   data,
+  isLoading,
+  errorMessage,
   onLogout,
   onNavigateHome,
+  onNavigateToRegistration,
 }) => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('home');
-  const delegate: DelegateDashboardData = { ...defaultDelegate, ...data };
+  const delegate = data;
 
-  const firstName = delegate.fullName.split(' ')[0] || 'Delegate';
+  const firstName = delegate?.fullName.split(' ')[0] || 'Delegate';
+  const application = delegate?.application;
 
   return (
     <div className="dashboard-container">
@@ -140,10 +124,33 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <main className="dashboard-content">
           {activeTab === 'home' && (
             <div className="tab-home-content">
+              {isLoading && <p role="status">Loading your saved delegate information…</p>}
+              {errorMessage && <p className="signin-alert" role="alert">{errorMessage}</p>}
+              {!isLoading && !errorMessage && !delegate && (
+                <div className="coming-soon-card">
+                  <h2 className="section-title">Dashboard unavailable</h2>
+                  <p className="section-subtitle">Sign in again to load your saved information.</p>
+                </div>
+              )}
+              {!isLoading && !errorMessage && delegate && !application && (
+                <div className="coming-soon-card">
+                  <h2 className="section-title">No application submitted</h2>
+                  <p className="section-subtitle">
+                    Your account is ready. Complete the delegate registration form to see your application status here.
+                  </p>
+                  {onNavigateToRegistration && (
+                    <button type="button" className="nav-cta" onClick={onNavigateToRegistration}>
+                      Start Registration
+                    </button>
+                  )}
+                </div>
+              )}
+              {!isLoading && !errorMessage && delegate && application && (
+                <>
               <div className="dashboard-section-header">
                 <h2 className="section-title">Registration Details</h2>
                 <p className="section-subtitle">
-                  Here are the details you submitted during registration.
+                  Details saved with application {application.reference}.
                 </p>
               </div>
 
@@ -198,7 +205,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </div>
                       <div className="detail-text">
                         <span className="detail-label">Designation</span>
-                        <span className="detail-value">{delegate.designation || 'Delegate'}</span>
+                        <span className="detail-value">{delegate.role === 'DELEGATE' ? 'Delegate' : delegate.role}</span>
                       </div>
                     </div>
 
@@ -208,7 +215,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </div>
                       <div className="detail-text">
                         <span className="detail-label">Category</span>
-                        <span className="detail-value">{delegate.academicLevel}</span>
+                        <span className="detail-value">{application.academicLevel}</span>
                       </div>
                     </div>
 
@@ -219,12 +226,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <div className="detail-text">
                         <span className="detail-label">Preferred Committee(s)</span>
                         <span className="detail-value">
-                          {delegate.preferredCommittees && delegate.preferredCommittees.length > 0
-                            ? delegate.preferredCommittees.join(', ')
-                            : 'UNSC, UNHRC, AIPPM'}
+                          {application.preferences.map(({ committee }) => committee.code).join(', ')}
                         </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="registration-details-card">
+                <div className="detail-item">
+                  <div className="detail-icon-wrap icon-gold">
+                    <FileText size={18} />
+                  </div>
+                  <div className="detail-text">
+                    <span className="detail-label">Application status</span>
+                    <span className="detail-value">{application.status.replaceAll('_', ' ')}</span>
+                  </div>
+                </div>
+                <div className="detail-item">
+                  <div className="detail-icon-wrap icon-blue">
+                    <Calendar size={18} />
+                  </div>
+                  <div className="detail-text">
+                    <span className="detail-label">Submitted</span>
+                    <span className="detail-value">{new Date(application.submittedAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
@@ -241,9 +267,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <div className="status-card-divider" />
 
                   <div className="status-card-body">
-                    {delegate.committeeAllotted ? (
+                    {application.allocation?.status === 'ALLOCATED' ? (
                       <div className="allotted-success">
-                        <span className="allotted-badge">{delegate.committeeAllotted}</span>
+                        <span className="allotted-badge">{application.allocation.committee.code}</span>
                       </div>
                     ) : (
                       <>
@@ -252,7 +278,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                         <h4 className="status-value-empty">Not yet allotted</h4>
                         <p className="status-hint">
-                          Your committee will be assigned soon, a week before the event.
+                          Your committee allocation is pending review.
                         </p>
                       </>
                     )}
@@ -270,9 +296,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <div className="status-card-divider" />
 
                   <div className="status-card-body">
-                    {delegate.portfolioAllotted ? (
+                    {application.allocation?.status === 'ALLOCATED' ? (
                       <div className="allotted-success">
-                        <span className="allotted-badge">{delegate.portfolioAllotted}</span>
+                        <span className="allotted-badge">{application.allocation.portfolio.name}</span>
                       </div>
                     ) : (
                       <>
@@ -281,13 +307,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                         <h4 className="status-value-empty">Not yet allotted</h4>
                         <p className="status-hint">
-                          Your portfolio will be assigned soon, a week before the event.
+                          Your portfolio allocation is pending review.
                         </p>
                       </>
                     )}
                   </div>
                 </div>
               </div>
+                </>
+              )}
             </div>
           )}
 
@@ -313,6 +341,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
           )}
+
         </main>
       </div>
     </div>

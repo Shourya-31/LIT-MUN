@@ -1,0 +1,171 @@
+.admin-portal {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% 0, rgba(217, 181, 109, 0.09), transparent 48%),
+    #071629;
+  color: var(--soft-linen, #f6f1e8);
+}
+
+.admin-portal-header {
+  display: flex;
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px clamp(20px, 5vw, 72px);
+  border-bottom: 1px solid rgba(217, 181, 109, 0.2);
+  background: rgba(9, 26, 48, 0.94);
+}
+
+.admin-portal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.admin-portal-brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.admin-portal-brand span {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-portal-brand strong {
+  font: 700 1rem/1 var(--font-heading, Georgia, serif);
+  letter-spacing: 0.12em;
+}
+
+.admin-portal-brand small {
+  color: var(--lavender-grey, #adb7c6);
+  font: 600 0.65rem/1.2 var(--font-subheading, Arial, sans-serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-portal-account {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--lavender-grey, #adb7c6);
+  font: 500 0.82rem/1.4 var(--font-subheading, Arial, sans-serif);
+}
+
+.admin-portal-account button,
+.admin-portal-message button,
+.admin-portal-back {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid rgba(217, 181, 109, 0.55);
+  background: transparent;
+  color: var(--soft-linen, #f6f1e8);
+  font: 600 0.76rem/1.2 var(--font-subheading, Arial, sans-serif);
+}
+
+.admin-portal-account button:hover,
+.admin-portal-message button:hover,
+.admin-portal-back:hover {
+  background: rgba(217, 181, 109, 0.12);
+}
+
+.admin-login-content {
+  display: flex;
+  min-height: calc(100vh - 79px);
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 42px 20px 64px;
+}
+
+.admin-login-heading {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: var(--soft-fawn, #d9b56d);
+}
+
+.admin-login-heading p {
+  margin: 0;
+  font: 600 0.72rem/1.3 var(--font-subheading, Arial, sans-serif);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.admin-login-content .signin-container {
+  min-height: auto;
+  padding: 0;
+}
+
+.admin-login-content .signin-footer {
+  display: none;
+}
+
+.admin-portal-back {
+  border-color: transparent;
+  color: var(--lavender-grey, #adb7c6);
+}
+
+.admin-portal-message {
+  display: flex;
+  min-height: calc(100vh - 79px);
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.admin-portal-message svg {
+  color: var(--soft-fawn, #d9b56d);
+}
+
+.admin-portal-message h1,
+.admin-portal-message p {
+  margin: 0;
+}
+
+.admin-portal-message h1 {
+  font: 600 clamp(1.5rem, 4vw, 2.2rem)/1.2 var(--font-heading, Georgia, serif);
+}
+
+.admin-portal-message p {
+  max-width: 500px;
+  color: var(--lavender-grey, #adb7c6);
+  font: 400 0.92rem/1.7 var(--font-body, Arial, sans-serif);
+}
+
+.admin-portal-dashboard {
+  padding: 28px clamp(16px, 4vw, 48px) 56px;
+}
+
+.admin-portal-dashboard .admin-panel {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .admin-portal-account {
+    gap: 8px;
+  }
+
+  .admin-portal-account > span {
+    display: none;
+  }
+
+  .admin-portal-dashboard {
+    padding-inline: 12px;
+  }
+}

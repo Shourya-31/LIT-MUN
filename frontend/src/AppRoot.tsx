@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import App from './App';
 import TargetCursor from './Component/animations/TargetCursor';
 import LoadingScreen from './Component/loading/LoadingScreen';
+import { AuthProvider } from './contexts/AuthContext';
 
 const AppRoot: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +31,9 @@ const AppRoot: React.FC = () => {
         cursorColorOnTarget="#f2d18a"
       />
       <div ref={appContentRef} aria-hidden={isLoading}>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </div>
       {isLoading && <LoadingScreen onComplete={dismissLoadingScreen} />}
     </div>

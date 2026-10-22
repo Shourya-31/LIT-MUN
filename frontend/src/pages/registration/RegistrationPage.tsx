@@ -3,6 +3,8 @@ import { Navbar } from '../../Component/navigation/Navbar';
 import { RegistrationForm } from '../../Component/registration/RegistrationForm';
 import { SignIn } from '../../Component/sign-in/SignIn';
 import { SignUp } from '../../Component/sign-up/SignUp';
+import type { RegistrationFormData } from '../../Component/registration/RegistrationForm';
+import { useAuth } from '../../contexts/useAuth';
 import './RegistrationPage.css';
 
 export type ActivePortalView = 'registration' | 'signin' | 'signup';
@@ -11,27 +13,27 @@ export interface RegistrationPageProps {
   initialView?: ActivePortalView;
   onNavigateToHome?: () => void;
   onNavigateToDashboard?: () => void;
-  onRegistrationSuccess?: (data: any) => void;
+  onAdministration?: () => void;
+  noticeMessage?: string | null;
+  onRegistrationSuccess?: (data: RegistrationFormData) => Promise<{ reference: string }>;
 }
 
 export const RegistrationPage: React.FC<RegistrationPageProps> = ({
   initialView = 'registration',
   onNavigateToHome,
   onNavigateToDashboard,
+  onAdministration,
+  noticeMessage,
   onRegistrationSuccess,
 }) => {
   const [activeView, setActiveView] = useState<ActivePortalView>(initialView);
-
-  React.useEffect(() => {
-    if (initialView && initialView !== activeView) {
-      setActiveView(initialView);
-    }
-  }, [initialView]);
+  const { user, isLoading } = useAuth();
 
   return (
     <div className="registration-page">
       <Navbar
         activeTab={activeView}
+        onAdministration={onAdministration ?? (() => undefined)}
         onSelectTab={(tab) => {
           if (tab === 'landing') {
             if (onNavigateToHome) onNavigateToHome();
@@ -106,18 +108,37 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
           </div>
 
           <div className="portal-active-view">
+            {noticeMessage && <p className="signup-message" role="status">{noticeMessage}</p>}
             {activeView === 'registration' && (
-              <RegistrationForm
-                onSuccess={onRegistrationSuccess}
-                onNavigateToSignIn={() => {
-                  setActiveView('signin');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              />
+              user ? (
+                <RegistrationForm
+                  onSuccess={onRegistrationSuccess}
+                  onNavigateToDashboard={onNavigateToDashboard}
+                />
+              ) : (
+                <div className="registration-card">
+                  <h2 className="registration-title">Sign in to save your application</h2>
+                  <p className="registration-subtitle">
+                    Your committee preferences are saved to your delegate account and remain available after you sign out.
+                  </p>
+                  {isLoading && <p role="status">Restoring your session…</p>}
+                  {!isLoading && (
+                    <div className="registration-actions">
+                      <button type="button" className="registration-submit-btn" onClick={() => setActiveView('signin')}>
+                        Sign In
+                      </button>
+                      <button type="button" className="registration-secondary-btn" onClick={() => setActiveView('signup')}>
+                        Create Account
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )
             )}
 
             {activeView === 'signin' && (
               <SignIn
+                onSuccess={onNavigateToDashboard}
                 onNavigateToSignUp={() => {
                   setActiveView('signup');
                   window.scrollTo({ top: 0, behavior: 'smooth' });

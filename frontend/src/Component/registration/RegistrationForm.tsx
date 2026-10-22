@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Globe,
   Shield,
@@ -9,13 +9,11 @@ import {
   ListFilter,
   ArrowRight,
   ArrowLeft,
-  ExternalLink,
 } from 'lucide-react';
-import {
-  AVAILABLE_COMMITTEES,
-  COMMITTEE_PORTFOLIOS,
-} from './portfoliosData';
+import type { CommitteeInfo } from './committeeTypes';
 import './RegistrationForm.css';
+import { useAuth } from '../../contexts/useAuth';
+import { api } from '../../lib/api';
 
 export interface RegistrationFormData {
   fullName: string;
@@ -57,8 +55,8 @@ export interface RegistrationFormData {
 }
 
 export interface RegistrationFormProps {
-  onSuccess?: (data: RegistrationFormData) => void;
-  onNavigateToSignIn?: () => void;
+  onSuccess?: (data: RegistrationFormData) => Promise<{ reference: string }>;
+  onNavigateToDashboard?: () => void;
 }
 
 const EXPERIENCE_OPTIONS = [
@@ -72,16 +70,20 @@ const EXPERIENCE_OPTIONS = [
 
 export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   onSuccess,
-  onNavigateToSignIn,
+  onNavigateToDashboard,
 }) => {
+  const { user } = useAuth();
+  const [committeeOptions, setCommitteeOptions] = useState<CommitteeInfo[]>([]);
+  const [isLoadingCommittees, setIsLoadingCommittees] = useState(true);
+  const [committeeError, setCommitteeError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [maxStepReached, setMaxStepReached] = useState<number>(1);
 
   const [formData, setFormData] = useState<RegistrationFormData>({
-    fullName: '',
-    email: '',
-    phone: '',
-    institution: '',
+    fullName: user?.fullName ?? '',
+    email: user?.email ?? '',
+    phone: user?.phone ?? '',
+    institution: user?.institution ?? '',
     academicLevel: 'Undergraduate',
     city: '',
     country: 'India',
@@ -110,11 +112,38 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [applicationReference, setApplicationReference] = useState<string | null>(null);
 
   // Modal state for "View Available Countries & Portfolios"
   const [isPortfoliosModalOpen, setIsPortfoliosModalOpen] = useState<boolean>(false);
   const [modalActiveTab, setModalActiveTab] = useState<string>('UNSC');
   const [modalSearchQuery, setModalSearchQuery] = useState<string>('');
+  const committeesByCode = useMemo(
+    () => Object.fromEntries(committeeOptions.map((committee) => [committee.code, committee])),
+    [committeeOptions],
+  );
+
+  useEffect(() => {
+    let active = true;
+    void api.committees.list()
+      .then((committees) => {
+        if (active) {
+          setCommitteeOptions(committees.map((committee) => ({
+            ...committee,
+            portfolios: committee.portfolios.map(({ name }) => name),
+          })));
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setCommitteeError(error instanceof Error ? error.message : 'Unable to load committee options');
+      })
+      .finally(() => {
+        if (active) setIsLoadingCommittees(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const updateField = (
     field: keyof RegistrationFormData,
@@ -203,6 +232,31 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         );
         return false;
       }
+      const choices = [
+        {
+          code: formData.committeeChoice2,
+          preferences: [formData.committee2Pref1, formData.committee2Pref2, formData.committee2Pref3],
+        },
+        {
+          code: formData.committeeChoice3,
+          preferences: [formData.committee3Pref1, formData.committee3Pref2, formData.committee3Pref3],
+        },
+      ];
+      if (new Set([formData.committeeChoice1, ...choices.map(({ code }) => code)]).size !== 3) {
+        setErrorMessage('Please select three different committees.');
+        return false;
+      }
+      for (const choice of choices) {
+        const selected = choice.preferences.filter(Boolean);
+        if (selected.length !== 0 && selected.length !== 3) {
+          setErrorMessage('Choose all three preferences for a committee or leave all three blank.');
+          return false;
+        }
+        if (new Set(selected).size !== selected.length) {
+          setErrorMessage('Please choose different portfolio preferences within each committee.');
+          return false;
+        }
+      }
     } else if (step === 3) {
       if (!formData.agreedToTerms) {
         setErrorMessage('You must confirm agreement with the LIT-MUN Rules of Procedure.');
@@ -237,34 +291,38 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep(3)) return;
-
+    if (!onSuccess) {
+      setErrorMessage('Application submission is unavailable. Please try again later.');
+      return;
+    }
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMessage(null);
+    const finalData: RegistrationFormData = {
+      ...formData,
+      primaryCommittee: formData.committeeChoice1,
+      primaryCountries: `${formData.committee1Pref1}, ${formData.committee1Pref2}, ${formData.committee1Pref3}`,
+      secondaryCommittee: formData.committeeChoice2,
+      secondaryCountries: [formData.committee2Pref1, formData.committee2Pref2, formData.committee2Pref3]
+        .filter(Boolean)
+        .join(', '),
+      tertiaryCommittee: formData.committeeChoice3,
+      tertiaryCountries: [formData.committee3Pref1, formData.committee3Pref2, formData.committee3Pref3]
+        .filter(Boolean)
+        .join(', '),
+    };
+    try {
+      const result = await onSuccess(finalData);
+      setApplicationReference(result.reference);
       setIsSubmitted(true);
-
-      const finalData: RegistrationFormData = {
-        ...formData,
-        primaryCommittee: formData.committeeChoice1,
-        primaryCountries: `${formData.committee1Pref1}, ${formData.committee1Pref2}, ${formData.committee1Pref3}`,
-        secondaryCommittee: formData.committeeChoice2,
-        secondaryCountries: [formData.committee2Pref1, formData.committee2Pref2, formData.committee2Pref3]
-          .filter(Boolean)
-          .join(', '),
-        tertiaryCommittee: formData.committeeChoice3,
-        tertiaryCountries: [formData.committee3Pref1, formData.committee3Pref2, formData.committee3Pref3]
-          .filter(Boolean)
-          .join(', '),
-      };
-
-      if (onSuccess) {
-        onSuccess(finalData);
-      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 600);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Application submission failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Helper for committee icon
@@ -293,7 +351,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <h2 className="registration-title">Registration Submitted</h2>
             <div className="success-alert-banner" role="status">
               <p className="success-banner-text">
-                Your registration has been accepted and you will be notified soon through email.
+                Your application has been submitted for review. Check your delegate dashboard for its status.
               </p>
             </div>
           </div>
@@ -301,7 +359,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           <div className="registration-summary-box">
             <div className="reg-summary-row">
               <span className="reg-summary-key">Application ID</span>
-              <span className="reg-summary-val highlight-id">LIT-MUN-2026-8941</span>
+              <span className="reg-summary-val highlight-id">{applicationReference}</span>
             </div>
             <div className="reg-summary-row">
               <span className="reg-summary-key">Delegate Name</span>
@@ -322,7 +380,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <div className="reg-summary-row">
               <span className="reg-summary-key">Committee Choice 1</span>
               <span className="reg-summary-val">
-                {formData.committeeChoice1} : {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.name}
+                {formData.committeeChoice1} : {committeesByCode[formData.committeeChoice1]?.name}
               </span>
             </div>
             <div className="reg-summary-row sub-row">
@@ -335,7 +393,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <div className="reg-summary-row">
                 <span className="reg-summary-key">Committee Choice 2</span>
                 <span className="reg-summary-val">
-                  {formData.committeeChoice2} : {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.name}
+                  {formData.committeeChoice2} : {committeesByCode[formData.committeeChoice2]?.name}
                 </span>
               </div>
             )}
@@ -343,7 +401,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <div className="reg-summary-row">
                 <span className="reg-summary-key">Committee Choice 3</span>
                 <span className="reg-summary-val">
-                  {formData.committeeChoice3} : {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.name}
+                  {formData.committeeChoice3} : {committeesByCode[formData.committeeChoice3]?.name}
                 </span>
               </div>
             )}
@@ -354,39 +412,19 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </div>
 
           <p className="registration-note">
-            The Executive Board reviews preferences in order of submission and verified credentials. You will receive official portfolio allocation and conference study material at <strong>{formData.email}</strong>.
+            Submission does not confirm acceptance or a final committee allocation. The Executive Board will review your application and preferences.
           </p>
 
           <div className="registration-actions">
-            {onSuccess && (
+            {onNavigateToDashboard && (
               <button
                 type="button"
                 className="registration-submit-btn"
-                onClick={() => onSuccess(formData)}
+                onClick={onNavigateToDashboard}
               >
                 Go to Dashboard
               </button>
             )}
-            {onNavigateToSignIn && (
-              <button
-                type="button"
-                className="registration-secondary-btn"
-                onClick={onNavigateToSignIn}
-              >
-                Go to Delegate Sign In
-              </button>
-            )}
-            <button
-              type="button"
-              className="registration-secondary-btn"
-              onClick={() => {
-                setIsSubmitted(false);
-                setCurrentStep(1);
-                setMaxStepReached(1);
-              }}
-            >
-              Submit Another Registration
-            </button>
           </div>
         </div>
       </div>
@@ -394,10 +432,10 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   }
 
   // Active committee portfolio list for current modal tab
-  const activeModalCommittee = COMMITTEE_PORTFOLIOS[modalActiveTab] || COMMITTEE_PORTFOLIOS.UNSC;
-  const filteredModalPortfolios = activeModalCommittee.portfolios.filter((p) =>
+  const activeModalCommittee = committeesByCode[modalActiveTab] ?? committeeOptions[0];
+  const filteredModalPortfolios = activeModalCommittee?.portfolios.filter((p) =>
     p.toLowerCase().includes(modalSearchQuery.toLowerCase())
-  );
+  ) ?? [];
 
   return (
     <div className="registration-container">
@@ -408,6 +446,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             Complete the official conference application to secure your committee and portfolio preferences.
           </p>
         </div>
+        {isLoadingCommittees && <p role="status">Loading committee and portfolio options…</p>}
+        {committeeError && <div className="registration-alert" role="alert">{committeeError}</div>}
 
         {/* 3 Step Navigation Bar: Once activated, steps remain activated so user can move back and forth */}
         <div className="registration-steps-bar" role="tablist" aria-label="Registration Progress">
@@ -585,7 +625,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                   id="btn-view-available-portfolios"
                   className="btn-view-portfolios"
                   onClick={() => setIsPortfoliosModalOpen(true)}
-                  title="Explore all countries and portfolios across UNSC, UNHRC, and AIPPM"
+                  disabled={isLoadingCommittees || committeeOptions.length === 0}
+                  title="Explore all countries and portfolios available for this conference"
                 >
                   <ListFilter size={15} className="btn-icon" />
                   <span>View Available Countries & Portfolios</span>
@@ -611,7 +652,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     value={formData.committeeChoice1}
                     onChange={(e) => handleCommitteeChange(1, e.target.value)}
                   >
-                    {AVAILABLE_COMMITTEES.map((comm) => (
+                    {committeeOptions.map((comm) => (
                       <option key={comm.code} value={comm.code}>
                         {comm.code} — {comm.name}
                       </option>
@@ -640,7 +681,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         required
                       >
                         <option value="">-- Select Preference 1 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice1]?.portfolios.map((item) => (
                           <option
                             key={item}
                             value={item}
@@ -664,7 +705,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         required
                       >
                         <option value="">-- Select Preference 2 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice1]?.portfolios.map((item) => (
                           <option
                             key={item}
                             value={item}
@@ -688,7 +729,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         required
                       >
                         <option value="">-- Select Preference 3 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice1]?.portfolios.map((item) => (
                           <option
                             key={item}
                             value={item}
@@ -722,7 +763,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     value={formData.committeeChoice2}
                     onChange={(e) => handleCommitteeChange(2, e.target.value)}
                   >
-                    {AVAILABLE_COMMITTEES.map((comm) => (
+                    {committeeOptions.map((comm) => (
                       <option key={comm.code} value={comm.code}>
                         {comm.code} — {comm.name}
                       </option>
@@ -748,7 +789,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         onChange={(e) => updateField('committee2Pref1', e.target.value)}
                       >
                         <option value="">-- Select Preference 1 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice2]?.portfolios.map((item) => (
                           <option key={item} value={item}>{item}</option>
                         ))}
                       </select>
@@ -763,7 +804,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         onChange={(e) => updateField('committee2Pref2', e.target.value)}
                       >
                         <option value="">-- Select Preference 2 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice2]?.portfolios.map((item) => (
                           <option key={item} value={item}>{item}</option>
                         ))}
                       </select>
@@ -778,7 +819,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         onChange={(e) => updateField('committee2Pref3', e.target.value)}
                       >
                         <option value="">-- Select Preference 3 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice2]?.portfolios.map((item) => (
                           <option key={item} value={item}>{item}</option>
                         ))}
                       </select>
@@ -806,7 +847,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     value={formData.committeeChoice3}
                     onChange={(e) => handleCommitteeChange(3, e.target.value)}
                   >
-                    {AVAILABLE_COMMITTEES.map((comm) => (
+                    {committeeOptions.map((comm) => (
                       <option key={comm.code} value={comm.code}>
                         {comm.code} — {comm.name}
                       </option>
@@ -832,7 +873,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         onChange={(e) => updateField('committee3Pref1', e.target.value)}
                       >
                         <option value="">-- Select Preference 1 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice3]?.portfolios.map((item) => (
                           <option key={item} value={item}>{item}</option>
                         ))}
                       </select>
@@ -847,7 +888,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         onChange={(e) => updateField('committee3Pref2', e.target.value)}
                       >
                         <option value="">-- Select Preference 2 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice3]?.portfolios.map((item) => (
                           <option key={item} value={item}>{item}</option>
                         ))}
                       </select>
@@ -862,7 +903,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                         onChange={(e) => updateField('committee3Pref3', e.target.value)}
                       >
                         <option value="">-- Select Preference 3 --</option>
-                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.portfolios.map((item) => (
+                        {committeesByCode[formData.committeeChoice3]?.portfolios.map((item) => (
                           <option key={item} value={item}>{item}</option>
                         ))}
                       </select>
@@ -1056,6 +1097,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 id="reg-next-button"
                 className="reg-submit-btn"
                 onClick={handleNext}
+                disabled={currentStep === 2 && (isLoadingCommittees || !!committeeError)}
               >
                 <span>Continue to Next Section</span>
                 <ArrowRight size={16} />
@@ -1065,7 +1107,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 type="submit"
                 id="reg-submit-application-button"
                 className="reg-submit-btn"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoadingCommittees || !!committeeError}
               >
                 {isSubmitting ? 'Submitting Application...' : 'Confirm and Submit Application'}
               </button>
@@ -1073,20 +1115,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </div>
         </form>
 
-        <div className="reg-footer-nav">
-          <p className="reg-footer-text">
-            Already have an active registration or account?{' '}
-            {onNavigateToSignIn && (
-              <button
-                type="button"
-                className="reg-inline-link"
-                onClick={onNavigateToSignIn}
-              >
-                Sign In to Delegate Portal
-              </button>
-            )}
-          </p>
-        </div>
       </div>
 
       {/* Available Countries & Portfolios Modal */}
@@ -1126,7 +1154,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
             {/* Committee Tabs */}
             <div className="modal-committee-tabs" role="tablist">
-              {AVAILABLE_COMMITTEES.map((c) => (
+              {committeeOptions.map((c) => (
                 <button
                   key={c.code}
                   type="button"
@@ -1145,9 +1173,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             {/* Committee Info & Search */}
             <div className="modal-committee-meta">
               <div className="comm-meta-text">
-                <span className="comm-meta-name">{activeModalCommittee.name}</span>
-                <span className="comm-meta-cat">{activeModalCommittee.category}</span>
-                <p className="comm-meta-desc">{activeModalCommittee.description}</p>
+                <span className="comm-meta-name">{activeModalCommittee?.name ?? 'Committee options unavailable'}</span>
+                <span className="comm-meta-cat">{activeModalCommittee?.category ?? ''}</span>
+                <p className="comm-meta-desc">{activeModalCommittee?.description ?? ''}</p>
               </div>
 
               <div className="modal-search-bar">
@@ -1155,7 +1183,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 <input
                   type="text"
                   className="modal-search-input"
-                  placeholder={`Search in ${modalActiveTab} (${activeModalCommittee.portfolios.length} items)...`}
+                  placeholder={`Search in ${modalActiveTab} (${activeModalCommittee?.portfolios.length ?? 0} items)...`}
                   value={modalSearchQuery}
                   onChange={(e) => setModalSearchQuery(e.target.value)}
                   autoFocus
@@ -1190,7 +1218,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
             <div className="modal-footer">
               <span className="modal-footer-hint">
-                Showing {filteredModalPortfolios.length} of {activeModalCommittee.portfolios.length} positions in {modalActiveTab}
+                Showing {filteredModalPortfolios.length} of {activeModalCommittee?.portfolios.length ?? 0} positions in {modalActiveTab}
               </span>
               <button
                 type="button"

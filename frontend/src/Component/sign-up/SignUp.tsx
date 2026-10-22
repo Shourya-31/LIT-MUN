@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SignUp.css';
+import { useAuth } from '../../contexts/useAuth';
 
 export interface SignUpProps {
   onSuccess?: (account: {
@@ -33,6 +34,8 @@ export const SignUp: React.FC<SignUpProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAccountCreated, setIsAccountCreated] = useState(false);
+  const [verificationEmailStatus, setVerificationEmailStatus] = useState<'sent' | 'not_configured' | 'delivery_failed'>('not_configured');
+  const { signUp } = useAuth();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -71,7 +74,7 @@ export const SignUp: React.FC<SignUpProps> = ({
     return null;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -82,19 +85,27 @@ export const SignUp: React.FC<SignUpProps> = ({
     }
 
     setIsSubmitting(true);
-
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const emailStatus = await signUp({
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        phone: formData.phone,
+        institution: formData.institution,
+        password: formData.password,
+      });
+      setVerificationEmailStatus(emailStatus);
       setIsAccountCreated(true);
-      if (onSuccess) {
-        onSuccess({
-          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
-          email: formData.email,
-          institution: formData.institution,
-          role: formData.role,
-        });
-      }
-    }, 700);
+      onSuccess?.({
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        institution: formData.institution,
+        role: 'DELEGATE',
+      });
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Account creation failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isAccountCreated) {
@@ -103,7 +114,11 @@ export const SignUp: React.FC<SignUpProps> = ({
         <div className="signup-card">
           <h2 className="signup-title">Account Created</h2>
           <p className="signup-message">
-            Your delegate account has been registered for LIT-MUN. A verification notice has been sent to {formData.email}.
+            Your delegate account has been created. {verificationEmailStatus === 'sent'
+              ? `A verification notice was sent to ${formData.email}.`
+              : verificationEmailStatus === 'not_configured'
+                ? 'Email verification is not configured in this environment.'
+                : 'The account is active, but the verification email could not be delivered. You can contact the secretariat if you need assistance.'}
           </p>
           <div className="signup-details-box">
             <div className="signup-detail-row">

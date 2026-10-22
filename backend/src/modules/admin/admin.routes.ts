@@ -50,6 +50,145 @@ function csvRow(values: Array<string | null | undefined>): string {
   return values.map(csvCell).join(',');
 }
 
+const adminApplicationProfileSelect = {
+  id: true,
+  userId: true,
+  reference: true,
+  fullName: true,
+  email: true,
+  phone: true,
+  institution: true,
+  academicLevel: true,
+  city: true,
+  country: true,
+  experienceLevel: true,
+  pastConferences: true,
+  statementOfIntent: true,
+  agreedToTerms: true,
+  status: true,
+  submittedAt: true,
+  updatedAt: true,
+  reviewedAt: true,
+  reviewerId: true,
+  reviewNote: true,
+  user: {
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      phone: true,
+      institution: true,
+      role: true,
+      status: true,
+      emailVerifiedAt: true,
+      lastLoginAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+  reviewer: { select: { id: true, fullName: true } },
+  preferences: {
+    orderBy: { rank: 'asc' },
+    select: {
+      id: true,
+      rank: true,
+      committee: { select: { id: true, code: true, name: true, category: true } },
+      portfolios: {
+        orderBy: { rank: 'asc' },
+        select: {
+          id: true,
+          rank: true,
+          portfolio: { select: { id: true, name: true } },
+        },
+      },
+    },
+  },
+  allocation: {
+    select: {
+      id: true,
+      status: true,
+      assignedAt: true,
+      updatedAt: true,
+      committee: { select: { id: true, code: true, name: true } },
+      portfolio: { select: { id: true, name: true } },
+      assignedBy: { select: { id: true, fullName: true } },
+    },
+  },
+} as const;
+
+async function findAdminProfileById(id: string) {
+  const application = await prisma.delegateApplication.findUnique({
+    where: { id },
+    select: adminApplicationProfileSelect,
+  });
+  if (application) return application;
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      phone: true,
+      institution: true,
+      role: true,
+      status: true,
+      emailVerifiedAt: true,
+      lastLoginAt: true,
+      createdAt: true,
+      updatedAt: true,
+      application: {
+        select: adminApplicationProfileSelect,
+      },
+    },
+  });
+
+  if (user?.application) return user.application;
+
+  if (user) {
+    return {
+      id: user.id,
+      userId: user.id,
+      reference: null,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      institution: user.institution,
+      academicLevel: null,
+      city: null,
+      country: null,
+      experienceLevel: null,
+      pastConferences: null,
+      statementOfIntent: null,
+      agreedToTerms: false,
+      status: 'NO_APPLICATION',
+      submittedAt: null,
+      updatedAt: user.updatedAt,
+      reviewedAt: null,
+      reviewerId: null,
+      reviewNote: null,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        phone: user.phone,
+        institution: user.institution,
+        role: user.role,
+        status: user.status,
+        emailVerifiedAt: user.emailVerifiedAt,
+        lastLoginAt: user.lastLoginAt,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+      reviewer: null,
+      preferences: [],
+      allocation: null,
+    };
+  }
+
+  throw notFound('Application was not found');
+}
+
 export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.get('/dashboard/stats', {
     preHandler: staffOnly,
@@ -224,75 +363,7 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     },
   }, async (request, reply) => {
     const { id } = applicationParamsSchema.parse(request.params);
-    const application = await prisma.delegateApplication.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        userId: true,
-        reference: true,
-        fullName: true,
-        email: true,
-        phone: true,
-        institution: true,
-        academicLevel: true,
-        city: true,
-        country: true,
-        experienceLevel: true,
-        pastConferences: true,
-        statementOfIntent: true,
-        agreedToTerms: true,
-        status: true,
-        submittedAt: true,
-        updatedAt: true,
-        reviewedAt: true,
-        reviewerId: true,
-        reviewNote: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            fullName: true,
-            phone: true,
-            institution: true,
-            role: true,
-            status: true,
-            emailVerifiedAt: true,
-            lastLoginAt: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        reviewer: { select: { id: true, fullName: true } },
-        preferences: {
-          orderBy: { rank: 'asc' },
-          select: {
-            id: true,
-            rank: true,
-            committee: { select: { id: true, code: true, name: true, category: true } },
-            portfolios: {
-              orderBy: { rank: 'asc' },
-              select: {
-                id: true,
-                rank: true,
-                portfolio: { select: { id: true, name: true } },
-              },
-            },
-          },
-        },
-        allocation: {
-          select: {
-            id: true,
-            status: true,
-            assignedAt: true,
-            updatedAt: true,
-            committee: { select: { id: true, code: true, name: true } },
-            portfolio: { select: { id: true, name: true } },
-            assignedBy: { select: { id: true, fullName: true } },
-          },
-        },
-      },
-    });
-    if (!application) throw notFound('Application was not found');
+    const application = await findAdminProfileById(id);
     return reply.send({ success: true, data: application, message: 'Application loaded' });
   });
 

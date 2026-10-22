@@ -54,6 +54,7 @@ integrationDescribe('PostgreSQL-backed delegate workflow', () => {
   let userId = '';
   let secondUserId = '';
   let adminId = '';
+  let noApplicationUserId = '';
   let applicationId = '';
   let reference = '';
 
@@ -91,7 +92,7 @@ integrationDescribe('PostgreSQL-backed delegate workflow', () => {
     if (applicationId) {
       await prisma.delegateApplication.deleteMany({ where: { id: applicationId } });
     }
-    const userIds = [userId, secondUserId, adminId].filter(Boolean);
+    const userIds = [userId, secondUserId, adminId, noApplicationUserId].filter(Boolean);
     if (userIds.length) {
       await prisma.auditLog.deleteMany({ where: { actorId: { in: userIds } } });
       await prisma.user.deleteMany({ where: { id: { in: userIds } } });
@@ -269,6 +270,35 @@ integrationDescribe('PostgreSQL-backed delegate workflow', () => {
       headers: authHeaders(adminToken),
     });
     expect(missingProfile.statusCode).toBe(404);
+
+    const noApplicationUser = await prisma.user.create({
+      data: {
+        email: `no-app-${suffix}@example.test`,
+        fullName: 'No Application Delegate',
+        phone: '+91 55555 12345',
+        institution: 'Legacy delegate without an application',
+        passwordHash: await argon2.hash(password, { type: argon2.argon2id }),
+      },
+    });
+    noApplicationUserId = noApplicationUser.id;
+
+    const noApplicationProfile = await app.inject({
+      method: 'GET',
+      url: `/api/v1/admin/applications/${noApplicationUser.id}`,
+      headers: authHeaders(adminToken),
+    });
+    expect(noApplicationProfile.statusCode).toBe(200);
+    expect(noApplicationProfile.json().data).toMatchObject({
+      id: noApplicationUser.id,
+      userId: noApplicationUser.id,
+      fullName: 'No Application Delegate',
+      email: `no-app-${suffix}@example.test`,
+      reference: null,
+      status: 'NO_APPLICATION',
+      preferences: [],
+      allocation: null,
+      user: { id: noApplicationUser.id, fullName: 'No Application Delegate' },
+    });
 
     for (const status of ['UNDER_REVIEW', 'ACCEPTED']) {
       const update = await app.inject({

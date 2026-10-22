@@ -14,6 +14,11 @@ function formatProfileDate(value: string | null): string {
     : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
 
+function formatStatusLabel(status: string | null | undefined): string {
+  if (!status || status === 'NO_APPLICATION') return 'No application submitted';
+  return status.replaceAll('_', ' ');
+}
+
 const ProfileField: React.FC<{ label: string; value: React.ReactNode; long?: boolean }> = ({
   label,
   value,
@@ -111,7 +116,7 @@ const DelegateProfileDialog: React.FC<DelegateProfileDialogProps> = ({ applicati
             <p>Delegate profile</p>
             <h2 id="admin-profile-title">{profile?.fullName ?? 'Delegate details'}</h2>
             <span id="admin-profile-reference">
-              {profile ? `Application reference · ${profile.reference}` : 'Full registration and application record'}
+              {profile ? `Application reference · ${profile.reference ?? 'No application submitted'}` : 'Full registration and application record'}
             </span>
           </div>
           <button ref={closeButtonRef} type="button" className="admin-profile-close" onClick={onClose} aria-label="Close delegate profile">
@@ -175,12 +180,12 @@ const DelegateProfileDialog: React.FC<DelegateProfileDialogProps> = ({ applicati
               <section className="admin-profile-section" aria-labelledby="profile-application-heading">
                 <h3 id="profile-application-heading">Application details</h3>
                 <dl className="admin-profile-grid">
-                  <ProfileField label="Application ID" value={profile.id} />
-                  <ProfileField label="Application reference" value={profile.reference} />
-                  <ProfileField label="Application status" value={profile.status.replaceAll('_', ' ')} />
+                  <ProfileField label="Application ID" value={profile.reference ? profile.id : profile.user.id} />
+                  <ProfileField label="Application reference" value={profile.reference ?? 'No application submitted'} />
+                  <ProfileField label="Application status" value={formatStatusLabel(profile.status)} />
                   <ProfileField label="Submitted" value={formatProfileDate(profile.submittedAt)} />
                   <ProfileField label="Last updated" value={formatProfileDate(profile.updatedAt)} />
-                  <ProfileField label="Agreed to terms" value={profile.agreedToTerms ? 'Yes' : 'No'} />
+                  <ProfileField label="Agreed to terms" value={profile.agreedToTerms === null ? 'Not provided' : profile.agreedToTerms ? 'Yes' : 'No'} />
                 </dl>
               </section>
 

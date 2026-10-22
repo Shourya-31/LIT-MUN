@@ -76,16 +76,19 @@ export interface AdminApplication {
   };
 }
 
-export interface AdminDelegateProfile extends AdminApplication {
+export interface AdminDelegateProfile extends Omit<AdminApplication, 'reference' | 'status' | 'submittedAt' | 'updatedAt'> {
   userId: string;
-  updatedAt: string;
-  academicLevel: string;
-  city: string;
-  country: string;
-  experienceLevel: string;
+  reference: string | null;
+  status: string;
+  submittedAt: string | null;
+  updatedAt: string | null;
+  academicLevel: string | null;
+  city: string | null;
+  country: string | null;
+  experienceLevel: string | null;
   pastConferences: string | null;
   statementOfIntent: string | null;
-  agreedToTerms: boolean;
+  agreedToTerms: boolean | null;
   reviewedAt: string | null;
   reviewerId: string | null;
   reviewNote: string | null;

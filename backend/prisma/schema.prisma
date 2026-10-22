@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  DELEGATE
+  SECRETARIAT
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  WAITLISTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum AllocationStatus {
+  ALLOCATED
+  UNALLOCATED
+}
+
+model User {
+  id                  String               @id @default(uuid()) @db.Uuid
+  email               String               @unique @db.VarChar(320)
+  passwordHash        String               @db.VarChar(255)
+  fullName            String               @db.VarChar(160)
+  phone               String               @db.VarChar(40)
+  institution         String               @db.VarChar(200)
+  role                UserRole             @default(DELEGATE)
+  status              UserStatus           @default(ACTIVE)
+  emailVerifiedAt     DateTime?
+  lastLoginAt         DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  application         DelegateApplication?
+  refreshSessions     RefreshSession[]
+  verificationTokens  EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  auditLogs           AuditLog[]           @relation("AuditActor")
+  reviewedApplications DelegateApplication[] @relation("ApplicationReviewer")
+  allocations         Allocation[]         @relation("AllocationActor")
+
+  @@index([role, status])
+}
+
+model DelegateApplication {
+  id                   String                    @id @default(uuid()) @db.Uuid
+  userId               String                    @unique @db.Uuid
+  reference            String                    @unique @db.VarChar(32)
+  fullName             String                    @db.VarChar(160)
+  email                String                    @db.VarChar(320)
+  phone                String                    @db.VarChar(40)
+  institution          String                    @db.VarChar(200)
+  academicLevel        String                    @db.VarChar(40)
+  city                 String                    @db.VarChar(120)
+  country              String                    @db.VarChar(120)
+  experienceLevel      String                    @db.VarChar(40)
+  pastConferences      String?                   @db.VarChar(2000)
+  statementOfIntent    String?                   @db.VarChar(4000)
+  agreedToTerms        Boolean
+  status               ApplicationStatus         @default(SUBMITTED)
+  submittedAt          DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  reviewedAt           DateTime?
+  reviewerId           String?                   @db.Uuid
+  reviewNote           String?                   @db.VarChar(2000)
+  user                 User                      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  reviewer             User?                     @relation("ApplicationReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  preferences          ApplicationCommitteePreference[]
+  allocation           Allocation?
+
+  @@index([status, submittedAt])
+  @@index([email])
+}
+
+model Committee {
+  id          String      @id @default(uuid()) @db.Uuid
+  code        String      @unique @db.VarChar(16)
+  name        String      @db.VarChar(200)
+  category    String      @db.VarChar(120)
+  description String      @db.VarChar(1000)
+  portfolios  Portfolio[]
+  preferences ApplicationCommitteePreference[]
+  allocations Allocation[]
+}
+
+model Portfolio {
+  id                 String                         @id @default(uuid()) @db.Uuid
+  committeeId        String                         @db.Uuid
+  name               String                         @db.VarChar(180)
+  committee          Committee                      @relation(fields: [committeeId], references: [id], onDelete: Restrict)
+  preferences        ApplicationPortfolioPreference[]
+  allocations        Allocation[]
+
+  @@unique([committeeId, name])
+  @@index([committeeId])
+}
+
+model ApplicationCommitteePreference {
+  id             String                          @id @default(uuid()) @db.Uuid
+  applicationId  String                          @db.Uuid
+  committeeId    String                          @db.Uuid
+  rank           Int
+  application    DelegateApplication             @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  committee      Committee                       @relation(fields: [committeeId], references: [id], onDelete: Restrict)
+  portfolios     ApplicationPortfolioPreference[]
+
+  @@unique([applicationId, rank])
+  @@unique([applicationId, committeeId])
+}
+
+model ApplicationPortfolioPreference {
+  id             String                         @id @default(uuid()) @db.Uuid
+  preferenceId   String                         @db.Uuid
+  portfolioId    String                         @db.Uuid
+  rank           Int
+  preference     ApplicationCommitteePreference @relation(fields: [preferenceId], references: [id], onDelete: Cascade)
+  portfolio      Portfolio                      @relation(fields: [portfolioId], references: [id], onDelete: Restrict)
+
+  @@unique([preferenceId, rank])
+  @@unique([preferenceId, portfolioId])
+}
+
+model Allocation {
+  id             String           @id @default(uuid()) @db.Uuid
+  applicationId  String           @unique @db.Uuid
+  committeeId    String           @db.Uuid
+  portfolioId    String           @db.Uuid
+  assignedById   String           @db.Uuid
+  status         AllocationStatus @default(ALLOCATED)
+  assignedAt     DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  application    DelegateApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  committee      Committee        @relation(fields: [committeeId], references: [id], onDelete: Restrict)
+  portfolio      Portfolio        @relation(fields: [portfolioId], references: [id], onDelete: Restrict)
+  assignedBy     User             @relation("AllocationActor", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@index([committeeId, status])
+}
+
+model RefreshSession {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  familyId    String    @db.Uuid
+  tokenHash   String    @unique @db.VarChar(64)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([familyId, revokedAt])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  tokenHash String   @unique @db.VarChar(64)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  tokenHash String   @unique @db.VarChar(64)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorId      String   @db.Uuid
+  action       String   @db.VarChar(80)
+  resourceType String   @db.VarChar(80)
+  resourceId   String   @db.VarChar(80)
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  actor        User     @relation("AuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([actorId, createdAt])
+  @@index([resourceType, resourceId])
+}

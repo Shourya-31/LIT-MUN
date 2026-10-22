@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useMagneticPointer } from '../../hooks/useMagneticPointer';
+import { useAuth } from '../../contexts/useAuth';
 import './Navbar.css';
 import NITRRMUNcrest from '../../assets/NITRRMUN-crest.png';
 
@@ -10,12 +11,12 @@ type PortalTab = 'landing' | 'registration' | 'signin' | 'signup' | 'dashboard';
 export interface NavbarProps {
   activeTab: PortalTab;
   onSelectTab: (tab: PortalTab) => void;
+  onAdministration?: () => void;
 }
 
-const navItems: { label: string; tab: PortalTab }[] = [
+const publicNavItems: { label: string; tab: PortalTab }[] = [
   { label: 'Home', tab: 'landing' },
   { label: 'Dashboard', tab: 'dashboard' },
-  { label: 'Sign In', tab: 'signin' },
 ];
 
 const conferenceLinks = [
@@ -24,12 +25,17 @@ const conferenceLinks = [
   { label: 'Gallery', href: '#gallery' },
 ];
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab, onAdministration }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authActionError, setAuthActionError] = useState<string | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const accountButtonRef = useMagneticPointer<HTMLButtonElement>(0.055);
   const reduceMotion = useReducedMotion() === true;
+  const { user, signOut } = useAuth();
+  const navItems = user
+    ? publicNavItems
+    : [...publicNavItems, { label: 'Sign In', tab: 'signin' as const }];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 12);
@@ -118,15 +124,29 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
               ))}
             </React.Fragment>
           ))}
-          <button
-            ref={accountButtonRef}
-            type="button"
-            className={`nav-cta magnetic-button ${activeTab === 'signup' ? 'active' : ''}`}
-            onClick={() => selectTab('signup')}
-            aria-current={activeTab === 'signup' ? 'page' : undefined}
-          >
-            <span>Create Account</span>
+          <button type="button" className="nav-link" onClick={() => onAdministration?.()}>
+            Administration
           </button>
+          {user ? (
+            <button
+              type="button"
+              className="nav-cta magnetic-button"
+              onClick={() => selectTab('dashboard')}
+              aria-label={`Open ${user.fullName}'s dashboard`}
+            >
+              <span>{user.fullName.split(' ')[0]}'s Account</span>
+            </button>
+          ) : (
+            <button
+              ref={accountButtonRef}
+              type="button"
+              className={`nav-cta magnetic-button ${activeTab === 'signup' ? 'active' : ''}`}
+              onClick={() => selectTab('signup')}
+              aria-current={activeTab === 'signup' ? 'page' : undefined}
+            >
+              <span>Create Account</span>
+            </button>
+          )}
         </nav>
 
         <div className="navbar-mobile-menu-host" id="portal-navigation">
@@ -158,13 +178,56 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
                 ))}
                 <motion.button
                   type="button"
-                  className={`nav-cta ${activeTab === 'signup' ? 'active' : ''}`}
-                  onClick={() => selectTab('signup')}
-                  aria-current={activeTab === 'signup' ? 'page' : undefined}
+                  className="nav-link"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onAdministration?.();
+                  }}
                   variants={itemVariants}
                 >
-                  <span>Create Account</span>
+                  Administration
                 </motion.button>
+                {user ? (
+                  <>
+                    <motion.button
+                      type="button"
+                      className="nav-cta"
+                      onClick={() => selectTab('dashboard')}
+                      variants={itemVariants}
+                    >
+                      <span>{user.fullName.split(' ')[0]}'s Account</span>
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      className="nav-link"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setAuthActionError(null);
+                        void signOut()
+                          .then(() => onSelectTab('landing'))
+                          .catch((error: unknown) => {
+                            setAuthActionError(error instanceof Error ? error.message : 'Unable to sign out');
+                          });
+                      }}
+                      variants={itemVariants}
+                    >
+                      Sign Out
+                    </motion.button>
+                  </>
+                ) : (
+                  <motion.button
+                    type="button"
+                    className={`nav-cta ${activeTab === 'signup' ? 'active' : ''}`}
+                    onClick={() => selectTab('signup')}
+                    aria-current={activeTab === 'signup' ? 'page' : undefined}
+                    variants={itemVariants}
+                  >
+                    <span>Create Account</span>
+                  </motion.button>
+                )}
+                {authActionError && (
+                  <p className="navbar-auth-error" role="alert">{authActionError}</p>
+                )}
               </motion.nav>
             )}
           </AnimatePresence>

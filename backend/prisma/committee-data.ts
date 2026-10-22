@@ -130,9 +130,3 @@ export const COMMITTEE_PORTFOLIOS: Record<string, CommitteeInfo> = {
     ],
   },
 };
-
-export const AVAILABLE_COMMITTEES = [
-  COMMITTEE_PORTFOLIOS.UNSC,
-  COMMITTEE_PORTFOLIOS.UNHRC,
-  COMMITTEE_PORTFOLIOS.AIPPM,
-];

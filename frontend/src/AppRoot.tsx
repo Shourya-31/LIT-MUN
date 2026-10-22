@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import App from './App';
-import CustomCursor from './Component/animations/CustomCursor';
+import TargetCursor from './Component/animations/TargetCursor';
 import LoadingScreen from './Component/loading/LoadingScreen';
+import { AuthProvider } from './contexts/AuthContext';
 
 const AppRoot: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -24,9 +25,15 @@ const AppRoot: React.FC = () => {
 
   return (
     <div className="application-root">
-      <CustomCursor />
+      <TargetCursor
+        targetSelector="a, button, [role='button'], input, textarea, select, .cursor-target"
+        cursorColor="#d9b56d"
+        cursorColorOnTarget="#f2d18a"
+      />
       <div ref={appContentRef} aria-hidden={isLoading}>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </div>
       {isLoading && <LoadingScreen onComplete={dismissLoadingScreen} />}
     </div>

@@ -1,0 +1,161 @@
+.admin-panel {
+  display: grid;
+  gap: 20px;
+}
+
+.admin-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #f6f1e8;
+}
+
+.admin-panel-heading h2 {
+  margin: 0;
+}
+
+.admin-panel-heading p {
+  color: #a8b6c8;
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.admin-stat-card,
+.admin-table-wrap,
+.admin-filters {
+  border: 1px solid rgba(217, 181, 109, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-stat-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  color: #a8b6c8;
+}
+
+.admin-stat-card strong {
+  color: #f2d18a;
+  font-size: 1.45rem;
+}
+
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px;
+  color: #d5deeb;
+}
+
+.admin-filters label {
+  display: grid;
+  flex: 1 1 220px;
+  gap: 6px;
+}
+
+.admin-filters input,
+.admin-filters select,
+.admin-row-actions select {
+  min-width: 0;
+  border: 1px solid rgba(217, 181, 109, 0.28);
+  border-radius: 7px;
+  padding: 9px;
+  background: #0b1d33;
+  color: #f6f1e8;
+}
+
+.admin-filters button,
+.admin-pagination button,
+.admin-row-actions button {
+  border: 1px solid rgba(217, 181, 109, 0.4);
+  border-radius: 7px;
+  padding: 9px 12px;
+  background: rgba(217, 181, 109, 0.12);
+  color: #f2d18a;
+  cursor: pointer;
+}
+
+.admin-filters button:disabled,
+.admin-pagination button:disabled,
+.admin-row-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  color: #e7edf5;
+}
+
+.admin-applications-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+
+.admin-applications-table th,
+.admin-applications-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(168, 182, 200, 0.12);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-applications-table th {
+  color: #f2d18a;
+  font-weight: 600;
+}
+
+.admin-applications-table td:first-child span {
+  display: block;
+  margin-top: 5px;
+  color: #a8b6c8;
+  font-size: 0.86rem;
+}
+
+.admin-row-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 7px;
+  max-width: 420px;
+}
+
+.admin-inline-error,
+.admin-error {
+  color: #ffaaa6;
+}
+
+.admin-table-message {
+  padding: 16px;
+  color: #a8b6c8;
+}
+
+.admin-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #a8b6c8;
+}
+
+.admin-pagination div {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .admin-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-row-actions {
+    grid-template-columns: minmax(120px, 1fr);
+  }
+}

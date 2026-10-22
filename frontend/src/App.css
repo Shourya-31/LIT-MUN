@@ -1,3 +1,19 @@
+.auth-status-banner {
+  position: fixed;
+  z-index: 120;
+  top: 16px;
+  left: 50%;
+  width: min(92vw, 680px);
+  margin: 0;
+  padding: 12px 18px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(217, 181, 109, 0.45);
+  border-radius: 10px;
+  background: #0b2039;
+  color: var(--soft-linen, #f6f1e8);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+}
+
 .landing-registration-cta {
   display: flex;
   flex-direction: column;

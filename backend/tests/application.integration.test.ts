@@ -231,6 +231,12 @@ integrationDescribe('PostgreSQL-backed delegate workflow', () => {
       headers: { authorization: `Bearer ${delegateToken}` },
     });
     expect(deniedStats.statusCode).toBe(403);
+    const deniedProfile = await app.inject({
+      method: 'GET',
+      url: `/api/v1/admin/applications/${applicationId}`,
+      headers: authHeaders(delegateToken),
+    });
+    expect(deniedProfile.statusCode).toBe(403);
 
     const admin = await prisma.user.create({
       data: {
@@ -251,6 +257,18 @@ integrationDescribe('PostgreSQL-backed delegate workflow', () => {
     });
     expect(adminLogin.statusCode).toBe(200);
     const adminToken = tokenFrom(adminLogin);
+    const invalidProfileId = await app.inject({
+      method: 'GET',
+      url: '/api/v1/admin/applications/not-a-uuid',
+      headers: authHeaders(adminToken),
+    });
+    expect(invalidProfileId.statusCode).toBe(400);
+    const missingProfile = await app.inject({
+      method: 'GET',
+      url: `/api/v1/admin/applications/${randomUUID()}`,
+      headers: authHeaders(adminToken),
+    });
+    expect(missingProfile.statusCode).toBe(404);
 
     for (const status of ['UNDER_REVIEW', 'ACCEPTED']) {
       const update = await app.inject({
@@ -273,6 +291,67 @@ integrationDescribe('PostgreSQL-backed delegate workflow', () => {
       payload: { committeeCode: 'UNSC', portfolioId: france.id },
     });
     expect(allocation.statusCode).toBe(201);
+
+    const profileResponse = await app.inject({
+      method: 'GET',
+      url: `/api/v1/admin/applications/${applicationId}`,
+      headers: authHeaders(adminToken),
+    });
+    expect(profileResponse.statusCode).toBe(200);
+    const profile = profileResponse.json().data;
+    expect(profile).toMatchObject({
+      id: applicationId,
+      reference,
+      fullName: '=1+1',
+      email,
+      phone: '+91 98765 43210',
+      institution: 'Integration Test University',
+      academicLevel: 'Undergraduate',
+      city: 'Raipur',
+      country: 'India',
+      experienceLevel: '1+',
+      pastConferences: null,
+      statementOfIntent: null,
+      agreedToTerms: true,
+      status: 'ACCEPTED',
+      user: {
+        id: userId,
+        email,
+        fullName: '=1+1',
+        phone: '+91 98765 43210',
+        institution: 'Integration Test University',
+      },
+      preferences: [
+        {
+          rank: 1,
+          committee: { code: 'UNSC' },
+          portfolios: [
+            { rank: 1, portfolio: { name: 'France' } },
+            { rank: 2, portfolio: { name: 'Japan' } },
+            { rank: 3, portfolio: { name: 'India' } },
+          ],
+        },
+        { rank: 2, committee: { code: 'UNHRC' }, portfolios: [] },
+        { rank: 3, committee: { code: 'AIPPM' }, portfolios: [] },
+      ],
+      allocation: {
+        status: 'ALLOCATED',
+        committee: { code: 'UNSC' },
+        portfolio: { name: 'France' },
+        assignedBy: { id: adminId, fullName: 'Integration Staff' },
+      },
+    });
+    expect(profile.user.createdAt).toBeTruthy();
+    expect(profile.reviewedAt).toBeTruthy();
+    for (const sensitiveField of [
+      'passwordHash',
+      'tokenHash',
+      'refreshSessions',
+      'verificationTokens',
+      'passwordResetTokens',
+    ]) {
+      expect(profileResponse.body).not.toContain(sensitiveField);
+    }
 
     const dashboard = await app.inject({
       method: 'GET',

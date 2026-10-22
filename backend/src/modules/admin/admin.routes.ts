@@ -30,6 +30,7 @@ const allocationBodySchema = z.object({
 });
 
 const roleBodySchema = z.object({ role: z.nativeEnum(UserRole) });
+const applicationParamsSchema = z.object({ id: z.string().uuid() });
 
 const transitions: Record<ApplicationStatus, ApplicationStatus[]> = {
   SUBMITTED: ['UNDER_REVIEW', 'WAITLISTED', 'REJECTED', 'WITHDRAWN'],
@@ -218,22 +219,77 @@ export async function adminRoutes(fastify: FastifyInstance): Promise<void> {
     preHandler: staffOnly,
     schema: {
       tags: ['admin'],
-      summary: 'Get an application and its preferences',
+      summary: 'Get a delegate profile and application details',
       security: [{ bearerAuth: [] }],
     },
   }, async (request, reply) => {
-    const { id } = request.params as { id: string };
+    const { id } = applicationParamsSchema.parse(request.params);
     const application = await prisma.delegateApplication.findUnique({
       where: { id },
-      include: {
-        preferences: {
-          orderBy: { rank: 'asc' },
-          include: {
-            committee: true,
-            portfolios: { orderBy: { rank: 'asc' }, include: { portfolio: true } },
+      select: {
+        id: true,
+        userId: true,
+        reference: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        institution: true,
+        academicLevel: true,
+        city: true,
+        country: true,
+        experienceLevel: true,
+        pastConferences: true,
+        statementOfIntent: true,
+        agreedToTerms: true,
+        status: true,
+        submittedAt: true,
+        updatedAt: true,
+        reviewedAt: true,
+        reviewerId: true,
+        reviewNote: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            phone: true,
+            institution: true,
+            role: true,
+            status: true,
+            emailVerifiedAt: true,
+            lastLoginAt: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
-        allocation: { include: { committee: true, portfolio: true, assignedBy: { select: { id: true, fullName: true } } } },
+        reviewer: { select: { id: true, fullName: true } },
+        preferences: {
+          orderBy: { rank: 'asc' },
+          select: {
+            id: true,
+            rank: true,
+            committee: { select: { id: true, code: true, name: true, category: true } },
+            portfolios: {
+              orderBy: { rank: 'asc' },
+              select: {
+                id: true,
+                rank: true,
+                portfolio: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+        allocation: {
+          select: {
+            id: true,
+            status: true,
+            assignedAt: true,
+            updatedAt: true,
+            committee: { select: { id: true, code: true, name: true } },
+            portfolio: { select: { id: true, name: true } },
+            assignedBy: { select: { id: true, fullName: true } },
+          },
+        },
       },
     });
     if (!application) throw notFound('Application was not found');

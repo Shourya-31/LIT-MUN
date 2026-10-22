@@ -15,8 +15,7 @@ The React site preserves the conference's navy-and-gold visual identity, respons
 
 ## Requirements
 
-- Node.js 22.12 or later and npm (for local development).
-- Docker Desktop with Docker Compose, or PostgreSQL 16 or later.
+- Docker with Docker Compose for the containerized deployment, or a Node.js 22.12+ runtime and PostgreSQL 16+ for an independently managed deployment.
 - PowerShell examples below assume Windows and commands run from the repository root unless stated otherwise.
 
 ## Run the integrated application with Docker
@@ -25,7 +24,7 @@ Docker Compose builds the React/Vite frontend into the backend image. A single F
 
 ### 1. Prepare configuration
 
-Compose reads the root `.env` file. Preserve any existing configuration; do not copy over or replace it. If there is no root `.env`, create one from the example and update it with the verified deployment settings before starting:
+Compose reads the root `.env` file. Preserve any existing configuration; do not copy over or replace it. If there is no root `.env`, create one from the example and configure it for the `nitrrmun.in` deployment before starting:
 
 ```powershell
 if (-not (Test-Path .env)) {
@@ -33,7 +32,7 @@ if (-not (Test-Path .env)) {
 }
 ```
 
-Set at least `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `JWT_ACCESS_SECRET`. Use the database and credentials intended for this environment. Set a unique random JWT secret of at least 32 characters. Never commit `.env`, paste its contents into issue reports, or reuse example credentials in a public deployment.
+Set `NODE_ENV=production`, `COOKIE_SECURE=true`, `APP_BASE_URL=https://nitrrmun.in`, and `FRONTEND_ORIGINS=https://nitrrmun.in`. Also set `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and a stable, unique, randomly generated `JWT_ACCESS_SECRET` of at least 32 characters. Use only database credentials verified for the intended deployment. Never commit `.env`, paste its contents into issue reports, or reuse example credentials in a public deployment.
 
 For the public site, set these exact origin values in the root `.env`:
 
@@ -42,7 +41,7 @@ APP_BASE_URL=https://nitrrmun.in
 FRONTEND_ORIGINS=https://nitrrmun.in
 ```
 
-The production configuration must also use `NODE_ENV=production` and `COOKIE_SECURE=true`. The domain must resolve to the deployment and HTTPS must terminate at the server or its reverse proxy. Keep the integrated Fastify listener on port 9090 behind that HTTPS entry point.
+The domain must resolve to the deployment and HTTPS must terminate at the server or its reverse proxy. Keep the integrated Fastify listener on port 9090 behind that HTTPS entry point. Frontend pages, staff pages, API requests, cookies, and email links all use the same `https://nitrrmun.in` origin.
 
 > **Existing database caution:** `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` initialize a new PostgreSQL data directory; they do not rename a database, change a password, or migrate existing records in a previously initialized volume. Before connecting an existing volume, verify its actual database, role, and credentials. Do not switch to another database because its name appears more suitable.
 
@@ -55,14 +54,14 @@ docker compose ps
 
 The backend waits for PostgreSQL health, applies committed migrations with `prisma migrate deploy`, then starts Fastify. This does not reset or seed the database.
 
-Open the public application:
+Use the public application:
 
 - Website: [https://nitrrmun.in](https://nitrrmun.in)
 - Staff login: [https://nitrrmun.in/admin/login](https://nitrrmun.in/admin/login)
 - API health: [https://nitrrmun.in/api/v1/health](https://nitrrmun.in/api/v1/health)
 - OpenAPI UI: [https://nitrrmun.in/docs](https://nitrrmun.in/docs)
 
-The HTTPS reverse proxy or hosting ingress for `nitrrmun.in` must forward requests to the Fastify service on port 9090. Fastify serves the frontend and API from the same origin; do not deploy a separate production frontend server.
+The HTTPS reverse proxy or hosting ingress for `nitrrmun.in` must forward requests to the Fastify service on port 9090. Fastify serves the frontend and API from the same origin; do not deploy a separate production frontend server. The public links above are the canonical URLs for all application routes.
 
 Seed committee and portfolio options when needed:
 
@@ -112,7 +111,7 @@ docker compose --env-file .env stop backend
 
 ## Build and validate
 
-The Docker image build compiles the Vite frontend and Fastify backend together. To run the repository checks directly:
+The Docker image build compiles the Vite frontend and Fastify backend together. To run build, lint, and test checks in a development environment:
 
 ```powershell
 Set-Location frontend
@@ -128,7 +127,7 @@ npm run typecheck
 npm test
 ```
 
-Use an isolated test database for database-backed tests. These checks do not deploy the site or change the running containers.
+Use an isolated test database for database-backed tests. These checks do not deploy the site or change the running containers. No separate frontend server is required or used by the deployed application.
 
 ## Accounts and roles
 
@@ -243,7 +242,7 @@ PostgreSQL-backed integration tests require `TEST_DATABASE_URL` to point to a de
 
 ## Production deployment
 
-The public application origin is `https://nitrrmun.in`. Ensure DNS and HTTPS termination for that domain point to the integrated Fastify application before opening production traffic. The public website, staff portal, and API all use this HTTPS origin; the Fastify container listens on port 9090 behind the HTTPS reverse proxy or hosting ingress. Do not treat example credentials or a database named `litmun_test` as production configuration without explicit verification.
+The public application origin is `https://nitrrmun.in`. Ensure DNS and HTTPS termination for that domain point to the integrated Fastify application before opening production traffic. The public website, staff portal, API, and email links all use this HTTPS origin; the Fastify container listens on port 9090 behind the HTTPS reverse proxy or hosting ingress. Do not treat example credentials or a database named `litmun_test` as production configuration without explicit verification.
 
 Before deployment:
 
@@ -273,7 +272,7 @@ Compose applies committed migrations at backend startup. This command does not d
 - **Production cookie is rejected:** serve the site over HTTPS and set `COOKIE_SECURE=true`.
 - **Migration fails:** inspect the migration error and live database before retrying. Do not reset the database to clear the error.
 - **Email is not delivered:** confirm all SMTP settings and inspect the provider's delivery logs; the app does not provide a development bypass that exposes email tokens.
-- **Compose reports a missing variable:** check that the root `.env` exists, contains required Compose values (including `APP_BASE_URL=https://nitrrmun.in` and `FRONTEND_ORIGINS=https://nitrrmun.in`), and is passed with `--env-file .env`.
+- **Compose reports a missing variable:** check that the root `.env` exists, contains the required database credentials, JWT secret, and public settings (`APP_BASE_URL=https://nitrrmun.in` and `FRONTEND_ORIGINS=https://nitrrmun.in`), and is passed with `--env-file .env`.
 
 ## Project structure
 

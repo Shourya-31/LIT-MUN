@@ -76,6 +76,54 @@ export interface AdminApplication {
   };
 }
 
+export interface AdminDelegateProfile extends AdminApplication {
+  userId: string;
+  updatedAt: string;
+  academicLevel: string;
+  city: string;
+  country: string;
+  experienceLevel: string;
+  pastConferences: string | null;
+  statementOfIntent: string | null;
+  agreedToTerms: boolean;
+  reviewedAt: string | null;
+  reviewerId: string | null;
+  reviewNote: string | null;
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+    phone: string;
+    institution: string;
+    role: 'DELEGATE' | 'SECRETARIAT' | 'ADMIN';
+    status: 'ACTIVE' | 'DISABLED';
+    emailVerifiedAt: string | null;
+    lastLoginAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  reviewer: { id: string; fullName: string } | null;
+  preferences: Array<{
+    id: string;
+    rank: number;
+    committee: { id: string; code: string; name: string; category: string };
+    portfolios: Array<{
+      id: string;
+      rank: number;
+      portfolio: { id: string; name: string };
+    }>;
+  }>;
+  allocation: null | {
+    id: string;
+    status: 'ALLOCATED' | 'UNALLOCATED';
+    assignedAt: string;
+    updatedAt: string;
+    committee: { id: string; code: string; name: string };
+    portfolio: { id: string; name: string };
+    assignedBy: { id: string; fullName: string };
+  };
+}
+
 export interface AdminStats {
   totalUsers: number;
   totalApplications: number;
@@ -281,6 +329,8 @@ export const api = {
   },
   admin: {
     stats: () => request<AdminStats>('/admin/dashboard/stats'),
+    delegateProfile: (id: string) =>
+      request<AdminDelegateProfile>(`/admin/applications/${encodeURIComponent(id)}`),
     applications: (query: { page: number; pageSize: number; q?: string; status?: string }) => {
       const params = new URLSearchParams({
         page: String(query.page),

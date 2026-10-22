@@ -50,8 +50,8 @@ export const Committees: React.FC<CommitteesProps> = ({ committees = committeesD
                     alt={committee.emblemAlt}
                     className="committee-emblem-img"
                     loading="lazy"
-                    width="205"
-                    height="205"
+                    width="185"
+                    height="185"
                   />
                 </div>
 

@@ -51,8 +51,6 @@ export const App: React.FC = () => {
       replacePath('/admin');
     } else if (pathname.startsWith('/admin/') && pathname !== '/admin/login' && !user) {
       replacePath('/admin/login');
-    } else if (staff && !pathname.startsWith('/admin')) {
-      replacePath('/admin');
     }
   }, [isAuthLoading, pathname, replacePath, user]);
 
@@ -129,8 +127,7 @@ export const App: React.FC = () => {
 
   const effectiveTab = activeTab === 'dashboard' && !isAuthLoading && !user ? 'signin' : activeTab;
 
-  const isStaff = user?.role === 'ADMIN' || user?.role === 'SECRETARIAT';
-  if (pathname === '/admin' || pathname.startsWith('/admin/') || (isStaff && !isAuthLoading)) {
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
     const staff = user?.role === 'ADMIN' || user?.role === 'SECRETARIAT';
     const view = isAuthLoading
       ? 'loading'

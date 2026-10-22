@@ -125,7 +125,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
     <section ref={sectionRef} id="schedule" className="conference-section schedule-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
         <div data-entrance="heading">
-          <SectionHeading id={`${uid}-heading`} number="01" eyebrow="The conference programme"
+          <SectionHeading id={`${uid}-heading`} number="02" eyebrow="The conference programme"
             title={<>Conference <em>Schedule</em></>}
             description="Follow the full conference itinerary, from the opening ceremony through committee sessions and breaks to the closing ceremony." />
         </div>

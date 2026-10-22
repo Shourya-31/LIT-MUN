@@ -19,7 +19,7 @@ export default function Secretariat() {
     <section id="secretariat" className="conference-section secretariat-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
         <ScrollReveal className="conference-reveal">
-          <SectionHeading id={`${uid}-heading`} number="02" eyebrow="The people behind the conference"
+          <SectionHeading id={`${uid}-heading`} number="03" eyebrow="The people behind the conference"
             title={<>The <em>Secretariat</em></>}
             description="Letters from the conference leadership, and the organising committee and teams bringing the conference together." />
         </ScrollReveal>

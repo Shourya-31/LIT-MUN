@@ -20,7 +20,7 @@ const navItems: { label: string; tab: PortalTab }[] = [
 
 const conferenceLinks = [
   { label: 'Schedule', href: '#schedule' },
-  { label: 'Resources', href: '#resources' },
+  { label: 'Secretariat', href: '#secretariat' },
   { label: 'Gallery', href: '#gallery' },
 ];
 

@@ -244,23 +244,6 @@ export const SignUp: React.FC<SignUpProps> = ({
                 required
               />
             </div>
-            <div className="signup-field-group">
-              <label htmlFor="signup-role" className="signup-label">
-                Conference Role
-              </label>
-              <select
-                id="signup-role"
-                name="role"
-                className="signup-select"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                <option value="Individual Delegate">Individual Delegate</option>
-                <option value="Head Delegate">Head Delegate (Delegation Lead)</option>
-                <option value="Faculty Advisor">Faculty Advisor</option>
-                <option value="International Observer">International Observer</option>
-              </select>
-            </div>
           </div>
 
           <div className="signup-row">

@@ -4,3 +4,6 @@ export { default as About } from './about/About';
 export { default as Committees } from './committees/Committees';
 export { default as FAQ } from './faq/FAQ';
 export { default as Contact } from './contact/Contact';
+export { default as Dashboard } from './dashboard/Dashboard';
+export { default as Schedule } from './schedule/Schedule';
+export { default as Gallery } from './gallery/Gallery';

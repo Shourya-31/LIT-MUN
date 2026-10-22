@@ -1,8 +1,23 @@
 import React, { useState } from 'react';
+import {
+  Globe,
+  Shield,
+  Users,
+  Search,
+  X,
+  CheckCircle2,
+  ListFilter,
+  ArrowRight,
+  ArrowLeft,
+  ExternalLink,
+} from 'lucide-react';
+import {
+  AVAILABLE_COMMITTEES,
+  COMMITTEE_PORTFOLIOS,
+} from './portfoliosData';
 import './RegistrationForm.css';
 
 export interface RegistrationFormData {
-  registrationType: 'individual' | 'group';
   fullName: string;
   email: string;
   phone: string;
@@ -10,20 +25,35 @@ export interface RegistrationFormData {
   academicLevel: string;
   city: string;
   country: string;
-  groupName?: string;
-  groupSize?: string;
 
-  primaryCommittee: string;
-  primaryCountries: string;
-  secondaryCommittee: string;
-  secondaryCountries: string;
-  tertiaryCommittee: string;
-  tertiaryCountries: string;
+  committeeChoice1: string;
+  committee1Pref1: string;
+  committee1Pref2: string;
+  committee1Pref3: string;
+
+  committeeChoice2: string;
+  committee2Pref1: string;
+  committee2Pref2: string;
+  committee2Pref3: string;
+
+  committeeChoice3: string;
+  committee3Pref1: string;
+  committee3Pref2: string;
+  committee3Pref3: string;
+
   experienceLevel: string;
   pastConferences: string;
   statementOfIntent: string;
 
   agreedToTerms: boolean;
+
+  // Backward compatibility alias keys
+  primaryCommittee?: string;
+  primaryCountries?: string;
+  secondaryCommittee?: string;
+  secondaryCountries?: string;
+  tertiaryCommittee?: string;
+  tertiaryCountries?: string;
 }
 
 export interface RegistrationFormProps {
@@ -31,32 +61,13 @@ export interface RegistrationFormProps {
   onNavigateToSignIn?: () => void;
 }
 
-const COMMITTEES = [
-  {
-    code: 'UNSC',
-    name: 'United Nations Security Council',
-    agenda: 'Mitigating Armed Conflict and Ensuring Humanitarian Corridors in Contested Borderlands',
-  },
-  {
-    code: 'DISEC',
-    name: 'Disarmament and International Security Committee',
-    agenda: 'Regulating Autonomous Weapon Systems and Artificial Intelligence in Modern Warfare',
-  },
-  {
-    code: 'UNHRC',
-    name: 'United Nations Human Rights Council',
-    agenda: 'Protection of Displaced Populations and Stateless Persons Across Conflict Zones',
-  },
-  {
-    code: 'ECOSOC',
-    name: 'Economic and Social Council',
-    agenda: 'Sovereign Debt Restructuring and Climate Resilience Financing in Developing Economies',
-  },
-  {
-    code: 'HCC',
-    name: 'Historic Crisis Committee (1962)',
-    agenda: 'The Cuban Missile Crisis and De-escalation Protocol Under Nuclear Alert',
-  },
+const EXPERIENCE_OPTIONS = [
+  '0 (First Conference)',
+  '1+',
+  '5+',
+  '10+',
+  '15+',
+  '50+',
 ];
 
 export const RegistrationForm: React.FC<RegistrationFormProps> = ({
@@ -64,8 +75,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   onNavigateToSignIn,
 }) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [maxStepReached, setMaxStepReached] = useState<number>(1);
+
   const [formData, setFormData] = useState<RegistrationFormData>({
-    registrationType: 'individual',
     fullName: '',
     email: '',
     phone: '',
@@ -73,15 +85,23 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     academicLevel: 'Undergraduate',
     city: '',
     country: 'India',
-    groupName: '',
-    groupSize: '5',
-    primaryCommittee: 'UNSC',
-    primaryCountries: '',
-    secondaryCommittee: 'DISEC',
-    secondaryCountries: '',
-    tertiaryCommittee: 'UNHRC',
-    tertiaryCountries: '',
-    experienceLevel: '1 to 3 Conferences',
+
+    committeeChoice1: 'UNSC',
+    committee1Pref1: '',
+    committee1Pref2: '',
+    committee1Pref3: '',
+
+    committeeChoice2: 'UNHRC',
+    committee2Pref1: '',
+    committee2Pref2: '',
+    committee2Pref3: '',
+
+    committeeChoice3: 'AIPPM',
+    committee3Pref1: '',
+    committee3Pref2: '',
+    committee3Pref3: '',
+
+    experienceLevel: '1+',
     pastConferences: '',
     statementOfIntent: '',
     agreedToTerms: false,
@@ -91,11 +111,47 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // Modal state for "View Available Countries & Portfolios"
+  const [isPortfoliosModalOpen, setIsPortfoliosModalOpen] = useState<boolean>(false);
+  const [modalActiveTab, setModalActiveTab] = useState<string>('UNSC');
+  const [modalSearchQuery, setModalSearchQuery] = useState<string>('');
+
   const updateField = (
     field: keyof RegistrationFormData,
     value: string | boolean
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCommitteeChange = (
+    choiceIndex: 1 | 2 | 3,
+    newCommitteeCode: string
+  ) => {
+    if (choiceIndex === 1) {
+      setFormData((prev) => ({
+        ...prev,
+        committeeChoice1: newCommitteeCode,
+        committee1Pref1: '',
+        committee1Pref2: '',
+        committee1Pref3: '',
+      }));
+    } else if (choiceIndex === 2) {
+      setFormData((prev) => ({
+        ...prev,
+        committeeChoice2: newCommitteeCode,
+        committee2Pref1: '',
+        committee2Pref2: '',
+        committee2Pref3: '',
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        committeeChoice3: newCommitteeCode,
+        committee3Pref1: '',
+        committee3Pref2: '',
+        committee3Pref3: '',
+      }));
+    }
   };
 
   const validateStep = (step: number): boolean => {
@@ -107,7 +163,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         return false;
       }
       if (!formData.email.trim() || !formData.email.includes('@')) {
-        setErrorMessage('Please provide a valid contact email address.');
+        setErrorMessage('Please provide a valid official email address.');
         return false;
       }
       if (!formData.phone.trim()) {
@@ -115,26 +171,36 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         return false;
       }
       if (!formData.institution.trim()) {
-        setErrorMessage('Please state your educational institution or organization.');
+        setErrorMessage('Please state your educational institution or college.');
         return false;
       }
       if (!formData.city.trim() || !formData.country.trim()) {
         setErrorMessage('Please specify your city and country of residence.');
         return false;
       }
-      if (formData.registrationType === 'group') {
-        if (!formData.groupName?.trim()) {
-          setErrorMessage('Please enter your group or delegation name.');
-          return false;
-        }
-      }
     } else if (step === 2) {
-      if (!formData.primaryCountries.trim()) {
-        setErrorMessage('Please enter at least three country preferences for your first committee choice.');
+      if (!formData.committeeChoice1) {
+        setErrorMessage('Please select Committee Choice 1.');
         return false;
       }
-      if (!formData.statementOfIntent.trim() || formData.statementOfIntent.trim().length < 40) {
-        setErrorMessage('Please write a short statement of intent (at least 40 characters) explaining your committee selection.');
+      if (
+        !formData.committee1Pref1 ||
+        !formData.committee1Pref2 ||
+        !formData.committee1Pref3
+      ) {
+        setErrorMessage(
+          'Please select all 3 preferred countries/portfolios for Committee Choice 1.'
+        );
+        return false;
+      }
+      if (
+        formData.committee1Pref1 === formData.committee1Pref2 ||
+        formData.committee1Pref1 === formData.committee1Pref3 ||
+        formData.committee1Pref2 === formData.committee1Pref3
+      ) {
+        setErrorMessage(
+          'Please choose three different country/portfolio preferences for Committee Choice 1.'
+        );
         return false;
       }
     } else if (step === 3) {
@@ -149,7 +215,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 3));
+      const nextStep = Math.min(currentStep + 1, 3);
+      setCurrentStep(nextStep);
+      setMaxStepReached((prev) => Math.max(prev, nextStep));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -160,6 +228,15 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleStepJump = (targetStep: number) => {
+    // Only allow navigating to steps that have already been activated
+    if (targetStep <= maxStepReached) {
+      setErrorMessage(null);
+      setCurrentStep(targetStep);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep(3)) return;
@@ -168,66 +245,132 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
+
+      const finalData: RegistrationFormData = {
+        ...formData,
+        primaryCommittee: formData.committeeChoice1,
+        primaryCountries: `${formData.committee1Pref1}, ${formData.committee1Pref2}, ${formData.committee1Pref3}`,
+        secondaryCommittee: formData.committeeChoice2,
+        secondaryCountries: [formData.committee2Pref1, formData.committee2Pref2, formData.committee2Pref3]
+          .filter(Boolean)
+          .join(', '),
+        tertiaryCommittee: formData.committeeChoice3,
+        tertiaryCountries: [formData.committee3Pref1, formData.committee3Pref2, formData.committee3Pref3]
+          .filter(Boolean)
+          .join(', '),
+      };
+
       if (onSuccess) {
-        onSuccess(formData);
+        onSuccess(finalData);
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 700);
+    }, 600);
   };
 
+  // Helper for committee icon
+  const getCommitteeIcon = (code: string) => {
+    switch (code) {
+      case 'UNSC':
+        return <Shield size={16} aria-hidden="true" />;
+      case 'UNHRC':
+        return <Globe size={16} aria-hidden="true" />;
+      case 'AIPPM':
+        return <Users size={16} aria-hidden="true" />;
+      default:
+        return <Shield size={16} aria-hidden="true" />;
+    }
+  };
+
+  // Render post-submit confirmation screen
   if (isSubmitted) {
     return (
       <div className="registration-container">
-        <div className="registration-card">
-          <h2 className="registration-title">Registration Submitted</h2>
-          <p className="registration-subtitle">
-            Your registration application for LIT Model United Nations has been logged with the Secretariat.
-          </p>
+        <div className="registration-card submission-success-card">
+          <div className="submission-success-header">
+            <div className="success-icon-badge">
+              <CheckCircle2 size={44} className="success-check-icon" />
+            </div>
+            <h2 className="registration-title">Registration Submitted</h2>
+            <div className="success-alert-banner" role="status">
+              <p className="success-banner-text">
+                Your registration has been accepted and you will be notified soon through email.
+              </p>
+            </div>
+          </div>
 
           <div className="registration-summary-box">
             <div className="reg-summary-row">
               <span className="reg-summary-key">Application ID</span>
-              <span className="reg-summary-val">LIT-MUN-2026-8941</span>
+              <span className="reg-summary-val highlight-id">LIT-MUN-2026-8941</span>
             </div>
             <div className="reg-summary-row">
-              <span className="reg-summary-key">Registration Type</span>
-              <span className="reg-summary-val">
-                {formData.registrationType === 'group'
-                  ? `Group Delegation (${formData.groupName})`
-                  : 'Individual Delegate'}
-              </span>
-            </div>
-            <div className="reg-summary-row">
-              <span className="reg-summary-key">Delegate / Contact Lead</span>
+              <span className="reg-summary-key">Delegate Name</span>
               <span className="reg-summary-val">{formData.fullName}</span>
+            </div>
+            <div className="reg-summary-row">
+              <span className="reg-summary-key">Delegate Email</span>
+              <span className="reg-summary-val">{formData.email}</span>
+            </div>
+            <div className="reg-summary-row">
+              <span className="reg-summary-key">Contact Phone</span>
+              <span className="reg-summary-val">{formData.phone}</span>
             </div>
             <div className="reg-summary-row">
               <span className="reg-summary-key">Institution</span>
               <span className="reg-summary-val">{formData.institution}</span>
             </div>
             <div className="reg-summary-row">
-              <span className="reg-summary-key">Primary Committee Choice</span>
-              <span className="reg-summary-val">{formData.primaryCommittee}</span>
+              <span className="reg-summary-key">Committee Choice 1</span>
+              <span className="reg-summary-val">
+                {formData.committeeChoice1} : {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.name}
+              </span>
             </div>
-            <div className="reg-summary-row">
-              <span className="reg-summary-key">Preferred Portfolios</span>
-              <span className="reg-summary-val">{formData.primaryCountries}</span>
+            <div className="reg-summary-row sub-row">
+              <span className="reg-summary-key">Preferred Portfolios (Choice 1)</span>
+              <span className="reg-summary-val">
+                1. {formData.committee1Pref1} | 2. {formData.committee1Pref2} | 3. {formData.committee1Pref3}
+              </span>
             </div>
-            <div className="reg-summary-row">
+            {formData.committeeChoice2 && (
+              <div className="reg-summary-row">
+                <span className="reg-summary-key">Committee Choice 2</span>
+                <span className="reg-summary-val">
+                  {formData.committeeChoice2} : {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.name}
+                </span>
+              </div>
+            )}
+            {formData.committeeChoice3 && (
+              <div className="reg-summary-row">
+                <span className="reg-summary-key">Committee Choice 3</span>
+                <span className="reg-summary-val">
+                  {formData.committeeChoice3} : {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.name}
+                </span>
+              </div>
+            )}
+            <div className="reg-summary-row total-row">
               <span className="reg-summary-key">Registration Fee</span>
-              <span className="reg-summary-val">Free (No Cost)</span>
+              <span className="reg-summary-val free-badge">No Cost / Free</span>
             </div>
           </div>
 
           <p className="registration-note">
-            The Executive Board reviews preferences in order of submission and experience. You will receive portfolio allocation details at {formData.email} within 3 business days.
+            The Executive Board reviews preferences in order of submission and verified credentials. You will receive official portfolio allocation and conference study material at <strong>{formData.email}</strong>.
           </p>
 
           <div className="registration-actions">
-            {onNavigateToSignIn && (
+            {onSuccess && (
               <button
                 type="button"
                 className="registration-submit-btn"
+                onClick={() => onSuccess(formData)}
+              >
+                Go to Dashboard
+              </button>
+            )}
+            {onNavigateToSignIn && (
+              <button
+                type="button"
+                className="registration-secondary-btn"
                 onClick={onNavigateToSignIn}
               >
                 Go to Delegate Sign In
@@ -239,6 +382,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               onClick={() => {
                 setIsSubmitted(false);
                 setCurrentStep(1);
+                setMaxStepReached(1);
               }}
             >
               Submit Another Registration
@@ -249,41 +393,52 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
     );
   }
 
+  // Active committee portfolio list for current modal tab
+  const activeModalCommittee = COMMITTEE_PORTFOLIOS[modalActiveTab] || COMMITTEE_PORTFOLIOS.UNSC;
+  const filteredModalPortfolios = activeModalCommittee.portfolios.filter((p) =>
+    p.toLowerCase().includes(modalSearchQuery.toLowerCase())
+  );
+
   return (
     <div className="registration-container">
       <div className="registration-card">
         <div className="registration-header-block">
           <h2 className="registration-title">Delegate Registration</h2>
           <p className="registration-subtitle">
-            Complete the official conference application to secure your committee placement.
+            Complete the official conference application to secure your committee and portfolio preferences.
           </p>
         </div>
 
-        {/* 3 Step indicator tabs: Identity, Committees, Review */}
-        <div className="registration-steps-bar" role="tablist">
+        {/* 3 Step Navigation Bar: Once activated, steps remain activated so user can move back and forth */}
+        <div className="registration-steps-bar" role="tablist" aria-label="Registration Progress">
           <button
             type="button"
-            className={`reg-step-item ${currentStep === 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}
-            onClick={() => currentStep > 1 && setCurrentStep(1)}
-            disabled={currentStep < 1}
+            className={`reg-step-item ${currentStep === 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''} ${1 <= maxStepReached ? 'activated' : ''}`}
+            onClick={() => handleStepJump(1)}
+            aria-selected={currentStep === 1}
+            title="Step 1: Delegate Identity"
           >
             <span className="step-num">1</span>
             <span className="step-text">Identity</span>
           </button>
           <button
             type="button"
-            className={`reg-step-item ${currentStep === 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}
-            onClick={() => currentStep > 2 && setCurrentStep(2)}
-            disabled={currentStep < 2}
+            className={`reg-step-item ${currentStep === 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''} ${2 <= maxStepReached ? 'activated' : ''}`}
+            onClick={() => handleStepJump(2)}
+            disabled={maxStepReached < 2}
+            aria-selected={currentStep === 2}
+            title={maxStepReached >= 2 ? 'Step 2: Committees' : 'Complete Step 1 to unlock'}
           >
             <span className="step-num">2</span>
             <span className="step-text">Committees</span>
           </button>
           <button
             type="button"
-            className={`reg-step-item ${currentStep === 3 ? 'active' : ''}`}
-            onClick={() => currentStep > 2 && setCurrentStep(3)}
-            disabled={currentStep < 3}
+            className={`reg-step-item ${currentStep === 3 ? 'active' : ''} ${3 <= maxStepReached ? 'activated' : ''}`}
+            onClick={() => handleStepJump(3)}
+            disabled={maxStepReached < 3}
+            aria-selected={currentStep === 3}
+            title={maxStepReached >= 3 ? 'Step 3: Review' : 'Complete Step 2 to unlock'}
           >
             <span className="step-num">3</span>
             <span className="step-text">Review</span>
@@ -297,77 +452,18 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
         )}
 
         <form onSubmit={handleSubmit} noValidate className="registration-form">
-          {/* STEP 1: IDENTITY & INSTITUTION */}
+          {/* STEP 1: INDIVIDUAL DELEGATE IDENTITY */}
           {currentStep === 1 && (
             <div className="reg-step-section">
-              <h3 className="reg-section-title">Section 1: Delegate Identity</h3>
-
-              <div className="reg-field-group">
-                <label className="reg-label">Registration Type</label>
-                <div className="reg-radio-group">
-                  <label className="reg-radio-label">
-                    <input
-                      type="radio"
-                      name="registrationType"
-                      checked={formData.registrationType === 'individual'}
-                      onChange={() => updateField('registrationType', 'individual')}
-                    />
-                    <span>Individual Delegate</span>
-                  </label>
-                  <label className="reg-radio-label">
-                    <input
-                      type="radio"
-                      name="registrationType"
-                      checked={formData.registrationType === 'group'}
-                      onChange={() => updateField('registrationType', 'group')}
-                    />
-                    <span>Group Delegation</span>
-                  </label>
-                </div>
+              <div className="section-title-wrap">
+                <h3 className="reg-section-title">Section 1: Delegate Identity</h3>
+                <span className="section-tag">Individual Delegate</span>
               </div>
-
-              {formData.registrationType === 'group' && (
-                <div className="reg-subpanel">
-                  <h4 className="reg-subpanel-title">Group / Delegation Details</h4>
-                  <div className="reg-row">
-                    <div className="reg-field-group">
-                      <label htmlFor="reg-group-name" className="reg-label">
-                        Delegation / Group Name
-                      </label>
-                      <input
-                        id="reg-group-name"
-                        type="text"
-                        className="reg-input"
-                        value={formData.groupName || ''}
-                        onChange={(e) => updateField('groupName', e.target.value)}
-                        placeholder="e.g. NIT Raipur MUN Society"
-                        required
-                      />
-                    </div>
-                    <div className="reg-field-group">
-                      <label htmlFor="reg-group-size" className="reg-label">
-                        Estimated Number of Delegates
-                      </label>
-                      <input
-                        id="reg-group-size"
-                        type="number"
-                        min="2"
-                        max="50"
-                        className="reg-input"
-                        value={formData.groupSize || ''}
-                        onChange={(e) => updateField('groupSize', e.target.value)}
-                        placeholder="e.g. 6"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <div className="reg-row">
                 <div className="reg-field-group">
                   <label htmlFor="reg-fullname" className="reg-label">
-                    {formData.registrationType === 'group' ? 'Head Delegate / Lead Name' : 'Full Legal Name'}
+                    Legal Name <span className="req-star">*</span>
                   </label>
                   <input
                     id="reg-fullname"
@@ -375,13 +471,13 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     className="reg-input"
                     value={formData.fullName}
                     onChange={(e) => updateField('fullName', e.target.value)}
-                    placeholder="First and last name"
+                    placeholder="Full legal name as per ID"
                     required
                   />
                 </div>
                 <div className="reg-field-group">
                   <label htmlFor="reg-email" className="reg-label">
-                    Official Email Address
+                    Official Email <span className="req-star">*</span>
                   </label>
                   <input
                     id="reg-email"
@@ -398,7 +494,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <div className="reg-row">
                 <div className="reg-field-group">
                   <label htmlFor="reg-phone" className="reg-label">
-                    Contact Phone Number
+                    Phone Number <span className="req-star">*</span>
                   </label>
                   <input
                     id="reg-phone"
@@ -431,7 +527,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
               <div className="reg-row">
                 <div className="reg-field-group">
                   <label htmlFor="reg-institution" className="reg-label">
-                    Educational Institution or College
+                    Educational Institution / College <span className="req-star">*</span>
                   </label>
                   <input
                     id="reg-institution"
@@ -445,7 +541,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 </div>
                 <div className="reg-field-group">
                   <label htmlFor="reg-city" className="reg-label">
-                    City and Country
+                    City & Country <span className="req-star">*</span>
                   </label>
                   <div className="reg-split-inputs">
                     <input
@@ -472,113 +568,310 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
             </div>
           )}
 
-          {/* STEP 2: COMMITTEE & PORTFOLIO */}
+          {/* STEP 2: COMMITTEES & PREFERRED COUNTRIES / PORTFOLIOS */}
           {currentStep === 2 && (
             <div className="reg-step-section">
-              <h3 className="reg-section-title">Section 2: Committee Preferences</h3>
+              <div className="section-title-wrap committee-section-header">
+                <div>
+                  <h3 className="reg-section-title">Section 2: Committee & Portfolio Choices</h3>
+                  <p className="reg-section-desc">
+                    Choose from our 3 official committees and select 3 country or portfolio preferences for each choice.
+                  </p>
+                </div>
 
-              <div className="reg-committee-block">
-                <div className="reg-row">
-                  <div className="reg-field-group">
-                    <label htmlFor="reg-comm-1" className="reg-label">
-                      First Committee Choice
-                    </label>
-                    <select
-                      id="reg-comm-1"
-                      className="reg-select"
-                      value={formData.primaryCommittee}
-                      onChange={(e) => updateField('primaryCommittee', e.target.value)}
-                    >
-                      {COMMITTEES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.code} : {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="reg-field-group">
-                    <label htmlFor="reg-countries-1" className="reg-label">
-                      Preferred Countries or Portfolios (Top 3)
-                    </label>
-                    <input
-                      id="reg-countries-1"
-                      type="text"
-                      className="reg-input"
-                      value={formData.primaryCountries}
-                      onChange={(e) => updateField('primaryCountries', e.target.value)}
-                      placeholder="e.g. India, France, Japan"
-                      required
-                    />
+                {/* View Available Countries & Portfolios button */}
+                <button
+                  type="button"
+                  id="btn-view-available-portfolios"
+                  className="btn-view-portfolios"
+                  onClick={() => setIsPortfoliosModalOpen(true)}
+                  title="Explore all countries and portfolios across UNSC, UNHRC, and AIPPM"
+                >
+                  <ListFilter size={15} className="btn-icon" />
+                  <span>View Available Countries & Portfolios</span>
+                </button>
+              </div>
+
+              {/* Committee Choice 1 */}
+              <div className="committee-choice-card">
+                <div className="choice-header">
+                  <div className="choice-title-pill">
+                    <span className="choice-badge">1</span>
+                    <span className="choice-heading">Committee Choice 1 (Primary)</span>
                   </div>
                 </div>
 
-                <div className="reg-row">
-                  <div className="reg-field-group">
-                    <label htmlFor="reg-comm-2" className="reg-label">
-                      Second Committee Choice
-                    </label>
-                    <select
-                      id="reg-comm-2"
-                      className="reg-select"
-                      value={formData.secondaryCommittee}
-                      onChange={(e) => updateField('secondaryCommittee', e.target.value)}
-                    >
-                      {COMMITTEES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.code} : {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="reg-field-group">
-                    <label htmlFor="reg-countries-2" className="reg-label">
-                      Preferred Countries (Choice 2)
-                    </label>
-                    <input
-                      id="reg-countries-2"
-                      type="text"
-                      className="reg-input"
-                      value={formData.secondaryCountries}
-                      onChange={(e) => updateField('secondaryCountries', e.target.value)}
-                      placeholder="e.g. United Kingdom, South Africa, Germany"
-                    />
-                  </div>
+                <div className="reg-field-group">
+                  <label htmlFor="reg-comm-choice-1" className="reg-label">
+                    Select Committee <span className="req-star">*</span>
+                  </label>
+                  <select
+                    id="reg-comm-choice-1"
+                    className="reg-select comm-select"
+                    value={formData.committeeChoice1}
+                    onChange={(e) => handleCommitteeChange(1, e.target.value)}
+                  >
+                    {AVAILABLE_COMMITTEES.map((comm) => (
+                      <option key={comm.code} value={comm.code}>
+                        {comm.code} — {comm.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="reg-row">
-                  <div className="reg-field-group">
-                    <label htmlFor="reg-comm-3" className="reg-label">
-                      Third Committee Choice
-                    </label>
-                    <select
-                      id="reg-comm-3"
-                      className="reg-select"
-                      value={formData.tertiaryCommittee}
-                      onChange={(e) => updateField('tertiaryCommittee', e.target.value)}
-                    >
-                      {COMMITTEES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.code} : {c.name}
-                        </option>
-                      ))}
-                    </select>
+                <div className="portfolio-preferences-box">
+                  <div className="pref-box-title">
+                    <span>
+                      Select 3 Preferred {formData.committeeChoice1 === 'AIPPM' ? 'Portfolios' : 'Countries'} for {formData.committeeChoice1}
+                    </span>
+                    <span className="pref-note">(Top 3 Choices)</span>
                   </div>
-                  <div className="reg-field-group">
-                    <label htmlFor="reg-countries-3" className="reg-label">
-                      Preferred Countries (Choice 3)
-                    </label>
-                    <input
-                      id="reg-countries-3"
-                      type="text"
-                      className="reg-input"
-                      value={formData.tertiaryCountries}
-                      onChange={(e) => updateField('tertiaryCountries', e.target.value)}
-                      placeholder="e.g. Brazil, Kenya, Mexico"
-                    />
+
+                  <div className="pref-dropdown-grid">
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm1-p1" className="reg-label-sub">
+                        Preference 1 <span className="req-star">*</span>
+                      </label>
+                      <select
+                        id="reg-comm1-p1"
+                        className="reg-select"
+                        value={formData.committee1Pref1}
+                        onChange={(e) => updateField('committee1Pref1', e.target.value)}
+                        required
+                      >
+                        <option value="">-- Select Preference 1 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.portfolios.map((item) => (
+                          <option
+                            key={item}
+                            value={item}
+                            disabled={item === formData.committee1Pref2 || item === formData.committee1Pref3}
+                          >
+                            {item}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm1-p2" className="reg-label-sub">
+                        Preference 2 <span className="req-star">*</span>
+                      </label>
+                      <select
+                        id="reg-comm1-p2"
+                        className="reg-select"
+                        value={formData.committee1Pref2}
+                        onChange={(e) => updateField('committee1Pref2', e.target.value)}
+                        required
+                      >
+                        <option value="">-- Select Preference 2 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.portfolios.map((item) => (
+                          <option
+                            key={item}
+                            value={item}
+                            disabled={item === formData.committee1Pref1 || item === formData.committee1Pref3}
+                          >
+                            {item}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm1-p3" className="reg-label-sub">
+                        Preference 3 <span className="req-star">*</span>
+                      </label>
+                      <select
+                        id="reg-comm1-p3"
+                        className="reg-select"
+                        value={formData.committee1Pref3}
+                        onChange={(e) => updateField('committee1Pref3', e.target.value)}
+                        required
+                      >
+                        <option value="">-- Select Preference 3 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice1]?.portfolios.map((item) => (
+                          <option
+                            key={item}
+                            value={item}
+                            disabled={item === formData.committee1Pref1 || item === formData.committee1Pref2}
+                          >
+                            {item}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
 
+              {/* Committee Choice 2 */}
+              <div className="committee-choice-card">
+                <div className="choice-header">
+                  <div className="choice-title-pill">
+                    <span className="choice-badge">2</span>
+                    <span className="choice-heading">Committee Choice 2 (Alternative)</span>
+                  </div>
+                </div>
+
+                <div className="reg-field-group">
+                  <label htmlFor="reg-comm-choice-2" className="reg-label">
+                    Select Committee
+                  </label>
+                  <select
+                    id="reg-comm-choice-2"
+                    className="reg-select comm-select"
+                    value={formData.committeeChoice2}
+                    onChange={(e) => handleCommitteeChange(2, e.target.value)}
+                  >
+                    {AVAILABLE_COMMITTEES.map((comm) => (
+                      <option key={comm.code} value={comm.code}>
+                        {comm.code} — {comm.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="portfolio-preferences-box">
+                  <div className="pref-box-title">
+                    <span>
+                      Select Preferred {formData.committeeChoice2 === 'AIPPM' ? 'Portfolios' : 'Countries'} for {formData.committeeChoice2}
+                    </span>
+                    <span className="pref-note">(Optional Backup)</span>
+                  </div>
+
+                  <div className="pref-dropdown-grid">
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm2-p1" className="reg-label-sub">Preference 1</label>
+                      <select
+                        id="reg-comm2-p1"
+                        className="reg-select"
+                        value={formData.committee2Pref1}
+                        onChange={(e) => updateField('committee2Pref1', e.target.value)}
+                      >
+                        <option value="">-- Select Preference 1 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.portfolios.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm2-p2" className="reg-label-sub">Preference 2</label>
+                      <select
+                        id="reg-comm2-p2"
+                        className="reg-select"
+                        value={formData.committee2Pref2}
+                        onChange={(e) => updateField('committee2Pref2', e.target.value)}
+                      >
+                        <option value="">-- Select Preference 2 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.portfolios.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm2-p3" className="reg-label-sub">Preference 3</label>
+                      <select
+                        id="reg-comm2-p3"
+                        className="reg-select"
+                        value={formData.committee2Pref3}
+                        onChange={(e) => updateField('committee2Pref3', e.target.value)}
+                      >
+                        <option value="">-- Select Preference 3 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice2]?.portfolios.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Committee Choice 3 */}
+              <div className="committee-choice-card">
+                <div className="choice-header">
+                  <div className="choice-title-pill">
+                    <span className="choice-badge">3</span>
+                    <span className="choice-heading">Committee Choice 3 (Alternative)</span>
+                  </div>
+                </div>
+
+                <div className="reg-field-group">
+                  <label htmlFor="reg-comm-choice-3" className="reg-label">
+                    Select Committee
+                  </label>
+                  <select
+                    id="reg-comm-choice-3"
+                    className="reg-select comm-select"
+                    value={formData.committeeChoice3}
+                    onChange={(e) => handleCommitteeChange(3, e.target.value)}
+                  >
+                    {AVAILABLE_COMMITTEES.map((comm) => (
+                      <option key={comm.code} value={comm.code}>
+                        {comm.code} — {comm.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="portfolio-preferences-box">
+                  <div className="pref-box-title">
+                    <span>
+                      Select Preferred {formData.committeeChoice3 === 'AIPPM' ? 'Portfolios' : 'Countries'} for {formData.committeeChoice3}
+                    </span>
+                    <span className="pref-note">(Optional Backup)</span>
+                  </div>
+
+                  <div className="pref-dropdown-grid">
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm3-p1" className="reg-label-sub">Preference 1</label>
+                      <select
+                        id="reg-comm3-p1"
+                        className="reg-select"
+                        value={formData.committee3Pref1}
+                        onChange={(e) => updateField('committee3Pref1', e.target.value)}
+                      >
+                        <option value="">-- Select Preference 1 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.portfolios.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm3-p2" className="reg-label-sub">Preference 2</label>
+                      <select
+                        id="reg-comm3-p2"
+                        className="reg-select"
+                        value={formData.committee3Pref2}
+                        onChange={(e) => updateField('committee3Pref2', e.target.value)}
+                      >
+                        <option value="">-- Select Preference 2 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.portfolios.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="reg-field-group">
+                      <label htmlFor="reg-comm3-p3" className="reg-label-sub">Preference 3</label>
+                      <select
+                        id="reg-comm3-p3"
+                        className="reg-select"
+                        value={formData.committee3Pref3}
+                        onChange={(e) => updateField('committee3Pref3', e.target.value)}
+                      >
+                        <option value="">-- Select Preference 3 --</option>
+                        {COMMITTEE_PORTFOLIOS[formData.committeeChoice3]?.portfolios.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Prior Experience: 1+, 5+, 10+, 15+, 50+ */}
               <div className="reg-row">
                 <div className="reg-field-group">
                   <label htmlFor="reg-experience" className="reg-label">
@@ -590,15 +883,16 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     value={formData.experienceLevel}
                     onChange={(e) => updateField('experienceLevel', e.target.value)}
                   >
-                    <option value="None / First Conference">None (First Conference)</option>
-                    <option value="1 to 3 Conferences">1 to 3 Conferences</option>
-                    <option value="4 to 7 Conferences">4 to 7 Conferences</option>
-                    <option value="8 or more Conferences">8 or more Conferences</option>
+                    {EXPERIENCE_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="reg-field-group">
                   <label htmlFor="reg-past-awards" className="reg-label">
-                    Past Recognitions or Key Committees (Optional)
+                    Past Recognitions or MUNs Attended (Optional)
                   </label>
                   <input
                     id="reg-past-awards"
@@ -606,54 +900,50 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     className="reg-input"
                     value={formData.pastConferences}
                     onChange={(e) => updateField('pastConferences', e.target.value)}
-                    placeholder="e.g. Best Delegate at IIT Bombay MUN"
+                    placeholder="e.g. Best Delegate at IIT MUN, Verbal Mention at Delhi MUN"
                   />
                 </div>
               </div>
 
+              {/* Statement of Intent: non-compulsory, no minimum limit */}
               <div className="reg-field-group">
-                <label htmlFor="reg-statement" className="reg-label">
-                  Statement of Intent and Motivation
-                </label>
+                <div className="label-with-hint">
+                  <label htmlFor="reg-statement" className="reg-label">
+                    Statement of Intent / Motivation (Optional)
+                  </label>
+                  <span className="field-hint">Non-compulsory (10-20 words is fine)</span>
+                </div>
                 <textarea
                   id="reg-statement"
                   className="reg-textarea"
-                  rows={4}
+                  rows={3}
                   value={formData.statementOfIntent}
                   onChange={(e) => updateField('statementOfIntent', e.target.value)}
-                  placeholder="Outline your substantive interest in your primary committee choice and relevant research background."
-                  required
+                  placeholder="Briefly state your interest in the selected committee or topics (optional)."
                 />
               </div>
             </div>
           )}
 
-          {/* STEP 3: REVIEW & DECLARATION */}
+          {/* STEP 3: FINAL REVIEW PAGE */}
           {currentStep === 3 && (
             <div className="reg-step-section">
-              <h3 className="reg-section-title">Section 3: Review and Declaration</h3>
+              <h3 className="reg-section-title">Section 3: Review Application</h3>
+              <p className="reg-section-desc">
+                Please verify your details and preferred committee allocations prior to final submission.
+              </p>
 
               <div className="reg-review-table">
                 <div className="reg-review-row">
-                  <span className="reg-review-label">Registration Type</span>
-                  <span className="reg-review-value">
-                    {formData.registrationType === 'group'
-                      ? `Group Delegation (${formData.groupName || 'Delegation'})`
-                      : 'Individual Delegate'}
-                  </span>
-                </div>
-                <div className="reg-review-row">
-                  <span className="reg-review-label">
-                    {formData.registrationType === 'group' ? 'Head Delegate' : 'Delegate'}
-                  </span>
+                  <span className="reg-review-label">Delegate Name</span>
                   <span className="reg-review-value">{formData.fullName}</span>
                 </div>
                 <div className="reg-review-row">
-                  <span className="reg-review-label">Email</span>
+                  <span className="reg-review-label">Delegate Email</span>
                   <span className="reg-review-value">{formData.email}</span>
                 </div>
                 <div className="reg-review-row">
-                  <span className="reg-review-label">Contact Phone</span>
+                  <span className="reg-review-label">Contact</span>
                   <span className="reg-review-value">{formData.phone}</span>
                 </div>
                 <div className="reg-review-row">
@@ -661,14 +951,72 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                   <span className="reg-review-value">{formData.institution}</span>
                 </div>
                 <div className="reg-review-row">
-                  <span className="reg-review-label">Primary Committee</span>
+                  <span className="reg-review-label">Academic Level</span>
+                  <span className="reg-review-value">{formData.academicLevel}</span>
+                </div>
+                <div className="reg-review-row">
+                  <span className="reg-review-label">City & Country</span>
                   <span className="reg-review-value">
-                    {formData.primaryCommittee} ({formData.primaryCountries})
+                    {formData.city}, {formData.country}
                   </span>
                 </div>
+
+                <div className="reg-review-divider" />
+
+                {/* Committee Choice 1, 2, 3 - not Primary/Secondary/Tertiary */}
+                <div className="reg-review-row">
+                  <span className="reg-review-label">Committee Choice 1</span>
+                  <span className="reg-review-value">
+                    <strong>{formData.committeeChoice1}</strong> (
+                    {[formData.committee1Pref1, formData.committee1Pref2, formData.committee1Pref3]
+                      .filter(Boolean)
+                      .join(' | ') || 'None selected'}
+                    )
+                  </span>
+                </div>
+
+                <div className="reg-review-row">
+                  <span className="reg-review-label">Committee Choice 2</span>
+                  <span className="reg-review-value">
+                    <strong>{formData.committeeChoice2}</strong>
+                    {[formData.committee2Pref1, formData.committee2Pref2, formData.committee2Pref3].some(Boolean)
+                      ? ` (${[formData.committee2Pref1, formData.committee2Pref2, formData.committee2Pref3].filter(Boolean).join(' | ')})`
+                      : ' (No preferences specified)'}
+                  </span>
+                </div>
+
+                <div className="reg-review-row">
+                  <span className="reg-review-label">Committee Choice 3</span>
+                  <span className="reg-review-value">
+                    <strong>{formData.committeeChoice3}</strong>
+                    {[formData.committee3Pref1, formData.committee3Pref2, formData.committee3Pref3].some(Boolean)
+                      ? ` (${[formData.committee3Pref1, formData.committee3Pref2, formData.committee3Pref3].filter(Boolean).join(' | ')})`
+                      : ' (No preferences specified)'}
+                  </span>
+                </div>
+
+                <div className="reg-review-row">
+                  <span className="reg-review-label">Prior MUNs Attended</span>
+                  <span className="reg-review-value">{formData.experienceLevel}</span>
+                </div>
+
+                {formData.pastConferences && (
+                  <div className="reg-review-row">
+                    <span className="reg-review-label">Past Recognitions</span>
+                    <span className="reg-review-value">{formData.pastConferences}</span>
+                  </div>
+                )}
+
+                {formData.statementOfIntent && (
+                  <div className="reg-review-row">
+                    <span className="reg-review-label">Statement of Intent</span>
+                    <span className="reg-review-value quote-text">{formData.statementOfIntent}</span>
+                  </div>
+                )}
+
                 <div className="reg-review-row total-row">
                   <span className="reg-review-label">Registration Fee</span>
-                  <span className="reg-review-value">Free (No Cost)</span>
+                  <span className="reg-review-value free-badge">No Cost / Free</span>
                 </div>
               </div>
 
@@ -697,7 +1045,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 className="reg-secondary-btn"
                 onClick={handlePrevious}
               >
-                Previous Step
+                <ArrowLeft size={16} />
+                <span>Previous Section</span>
               </button>
             )}
 
@@ -708,7 +1057,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 className="reg-submit-btn"
                 onClick={handleNext}
               >
-                Continue to Next Section
+                <span>Continue to Next Section</span>
+                <ArrowRight size={16} />
               </button>
             ) : (
               <button
@@ -738,6 +1088,121 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Available Countries & Portfolios Modal */}
+      {isPortfoliosModalOpen && (
+        <div
+          className="portfolios-modal-backdrop"
+          onClick={() => setIsPortfoliosModalOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-portfolios-title"
+        >
+          <div
+            className="portfolios-modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div className="modal-title-wrap">
+                <ListFilter size={20} className="modal-title-icon" />
+                <div>
+                  <h3 id="modal-portfolios-title" className="modal-title">
+                    Available Countries & Portfolios Matrix
+                  </h3>
+                  <p className="modal-sub">
+                    Reference list of countries and political portfolios available for LIT-MUN 2026.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setIsPortfoliosModalOpen(false)}
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Committee Tabs */}
+            <div className="modal-committee-tabs" role="tablist">
+              {AVAILABLE_COMMITTEES.map((c) => (
+                <button
+                  key={c.code}
+                  type="button"
+                  role="tab"
+                  aria-selected={modalActiveTab === c.code}
+                  className={`modal-tab-btn ${modalActiveTab === c.code ? 'active' : ''}`}
+                  onClick={() => setModalActiveTab(c.code)}
+                >
+                  {getCommitteeIcon(c.code)}
+                  <span className="tab-code">{c.code}</span>
+                  <span className="tab-count">({c.portfolios.length})</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Committee Info & Search */}
+            <div className="modal-committee-meta">
+              <div className="comm-meta-text">
+                <span className="comm-meta-name">{activeModalCommittee.name}</span>
+                <span className="comm-meta-cat">{activeModalCommittee.category}</span>
+                <p className="comm-meta-desc">{activeModalCommittee.description}</p>
+              </div>
+
+              <div className="modal-search-bar">
+                <Search size={16} className="modal-search-icon" />
+                <input
+                  type="text"
+                  className="modal-search-input"
+                  placeholder={`Search in ${modalActiveTab} (${activeModalCommittee.portfolios.length} items)...`}
+                  value={modalSearchQuery}
+                  onChange={(e) => setModalSearchQuery(e.target.value)}
+                  autoFocus
+                />
+                {modalSearchQuery && (
+                  <button
+                    type="button"
+                    className="modal-clear-search"
+                    onClick={() => setModalSearchQuery('')}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Portfolios List */}
+            <div className="modal-portfolios-grid" role="list">
+              {filteredModalPortfolios.length > 0 ? (
+                filteredModalPortfolios.map((item, index) => (
+                  <div key={item} className="portfolio-item-card" role="listitem">
+                    <span className="item-index">{index + 1}</span>
+                    <span className="item-name">{item}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="modal-empty-state">
+                  <p>No countries or portfolios found matching "{modalSearchQuery}".</p>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <span className="modal-footer-hint">
+                Showing {filteredModalPortfolios.length} of {activeModalCommittee.portfolios.length} positions in {modalActiveTab}
+              </span>
+              <button
+                type="button"
+                className="modal-done-btn"
+                onClick={() => setIsPortfoliosModalOpen(false)}
+              >
+                Close Matrix
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

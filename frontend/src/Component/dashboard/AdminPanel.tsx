@@ -1,17 +1,259 @@
-import React, { useEffect, useState } from 'react';
-import { api, type AdminApplication, type AdminStats, type CommitteeOption } from '../../lib/api';
+import React, { useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
+import { ApiError, api, type AdminApplication, type AdminDelegateProfile, type AdminStats, type CommitteeOption } from '../../lib/api';
 import './AdminPanel.css';
 
 const pageSize = 10;
 const statusOptions = ['SUBMITTED', 'UNDER_REVIEW', 'ACCEPTED', 'WAITLISTED', 'REJECTED', 'WITHDRAWN'];
 
+function formatProfileDate(value: string | null): string {
+  if (!value) return 'Not provided';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+function formatStatusLabel(status: string | null | undefined): string {
+  if (!status || status === 'NO_APPLICATION') return 'No application submitted';
+  return status.replaceAll('_', ' ');
+}
+
+const ProfileField: React.FC<{ label: string; value: React.ReactNode; long?: boolean }> = ({
+  label,
+  value,
+  long = false,
+}) => (
+  <div className={`admin-profile-field${long ? ' admin-profile-field-long' : ''}`}>
+    <dt>{label}</dt>
+    <dd>{value === null || value === undefined || value === '' ? 'Not provided' : value}</dd>
+  </div>
+);
+
+interface DelegateProfileDialogProps {
+  applicationId: string;
+  onClose: () => void;
+}
+
+const DelegateProfileDialog: React.FC<DelegateProfileDialogProps> = ({ applicationId, onClose }) => {
+  const [profile, setProfile] = useState<AdminDelegateProfile | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    void api.admin.delegateProfile(applicationId)
+      .then((result) => {
+        if (active) setProfile(result);
+      })
+      .catch((loadError: unknown) => {
+        if (!active) return;
+        if (loadError instanceof ApiError && loadError.status === 404) {
+          setError('This application could not be found. It may have been removed.');
+        } else {
+          setError(loadError instanceof Error ? loadError.message : 'Unable to load this delegate profile.');
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [applicationId, retryCount]);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeButtonRef.current?.focus();
+
+    return () => previouslyFocused?.focus();
+  }, []);
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      onClose();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = event.currentTarget.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!first || !last) {
+      event.preventDefault();
+    } else if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  return (
+    <div
+      className="admin-profile-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+      onKeyDown={handleKeyDown}
+    >
+      <section
+        className="admin-profile-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="admin-profile-title"
+        aria-describedby="admin-profile-reference"
+        tabIndex={-1}
+      >
+        <header className="admin-profile-header">
+          <div>
+            <p>Delegate profile</p>
+            <h2 id="admin-profile-title">{profile?.fullName ?? 'Delegate details'}</h2>
+            <span id="admin-profile-reference">
+              {profile ? `Application reference · ${profile.reference ?? 'No application submitted'}` : 'Full registration and application record'}
+            </span>
+          </div>
+          <button ref={closeButtonRef} type="button" className="admin-profile-close" onClick={onClose} aria-label="Close delegate profile">
+            <X size={20} aria-hidden="true" />
+          </button>
+        </header>
+
+        <div className="admin-profile-body" aria-live="polite">
+          {isLoading && <p className="admin-profile-state" role="status">Loading delegate profile…</p>}
+          {!isLoading && error && (
+            <div className="admin-profile-state admin-profile-error" role="alert">
+              <p>{error}</p>
+              <button type="button" onClick={() => {
+                setError(null);
+                setProfile(null);
+                setIsLoading(true);
+                setRetryCount((current) => current + 1);
+              }}>Retry</button>
+            </div>
+          )}
+          {!isLoading && profile && (
+            <>
+              <section className="admin-profile-section" aria-labelledby="profile-personal-heading">
+                <h3 id="profile-personal-heading">Personal and contact information</h3>
+                <dl className="admin-profile-grid">
+                  <ProfileField label="Full name (submitted)" value={profile.fullName} />
+                  <ProfileField label="Email address (submitted)" value={profile.email} />
+                  <ProfileField label="Phone number (submitted)" value={profile.phone} />
+                  <ProfileField label="Institution (submitted)" value={profile.institution} />
+                </dl>
+              </section>
+
+              <section className="admin-profile-section" aria-labelledby="profile-academic-heading">
+                <h3 id="profile-academic-heading">Academic and location details</h3>
+                <dl className="admin-profile-grid">
+                  <ProfileField label="Academic level" value={profile.academicLevel} />
+                  <ProfileField label="City" value={profile.city} />
+                  <ProfileField label="Country" value={profile.country} />
+                  <ProfileField label="Conference experience" value={profile.experienceLevel} />
+                  <ProfileField label="Past conferences" value={profile.pastConferences} long />
+                  <ProfileField label="Statement of intent" value={profile.statementOfIntent} long />
+                </dl>
+              </section>
+
+              <section className="admin-profile-section" aria-labelledby="profile-account-heading">
+                <h3 id="profile-account-heading">Account information</h3>
+                <dl className="admin-profile-grid">
+                  <ProfileField label="Account name" value={profile.user.fullName} />
+                  <ProfileField label="Account email" value={profile.user.email} />
+                  <ProfileField label="Account phone" value={profile.user.phone} />
+                  <ProfileField label="Account institution" value={profile.user.institution} />
+                  <ProfileField label="Account role" value={profile.user.role} />
+                  <ProfileField label="Account status" value={profile.user.status} />
+                  <ProfileField label="Email verified" value={profile.user.emailVerifiedAt ? `Yes · ${formatProfileDate(profile.user.emailVerifiedAt)}` : 'No'} />
+                  <ProfileField label="Last login" value={formatProfileDate(profile.user.lastLoginAt)} />
+                  <ProfileField label="Account created" value={formatProfileDate(profile.user.createdAt)} />
+                  <ProfileField label="Account last updated" value={formatProfileDate(profile.user.updatedAt)} />
+                </dl>
+              </section>
+
+              <section className="admin-profile-section" aria-labelledby="profile-application-heading">
+                <h3 id="profile-application-heading">Application details</h3>
+                <dl className="admin-profile-grid">
+                  <ProfileField label="Application ID" value={profile.reference ? profile.id : profile.user.id} />
+                  <ProfileField label="Application reference" value={profile.reference ?? 'No application submitted'} />
+                  <ProfileField label="Application status" value={formatStatusLabel(profile.status)} />
+                  <ProfileField label="Submitted" value={formatProfileDate(profile.submittedAt)} />
+                  <ProfileField label="Last updated" value={formatProfileDate(profile.updatedAt)} />
+                  <ProfileField label="Agreed to terms" value={profile.agreedToTerms === null ? 'Not provided' : profile.agreedToTerms ? 'Yes' : 'No'} />
+                </dl>
+              </section>
+
+              <section className="admin-profile-section" aria-labelledby="profile-preferences-heading">
+                <h3 id="profile-preferences-heading">Committee and portfolio preferences</h3>
+                {profile.preferences.length > 0 ? (
+                  <ol className="admin-profile-preferences">
+                    {profile.preferences.map((preference) => (
+                      <li key={preference.id}>
+                        <strong>
+                          Committee preference {preference.rank}: {preference.committee.code} — {preference.committee.name}
+                        </strong>
+                        <span>{preference.committee.category}</span>
+                        {preference.portfolios.length > 0 ? (
+                          <ol>
+                            {preference.portfolios.map(({ id, rank, portfolio }) => (
+                              <li key={id}>Portfolio preference {rank}: {portfolio.name}</li>
+                            ))}
+                          </ol>
+                        ) : (
+                          <span>No portfolio preferences provided</span>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="admin-profile-empty">No committee or portfolio preferences are recorded.</p>
+                )}
+              </section>
+
+              <section className="admin-profile-section" aria-labelledby="profile-review-heading">
+                <h3 id="profile-review-heading">Administrative review and allocation</h3>
+                <dl className="admin-profile-grid">
+                  <ProfileField label="Reviewed" value={formatProfileDate(profile.reviewedAt)} />
+                  <ProfileField label="Reviewed by" value={profile.reviewer?.fullName ?? 'Not reviewed'} />
+                  <ProfileField label="Review note" value={profile.reviewNote} long />
+                  <ProfileField
+                    label="Allocation"
+                    value={profile.allocation
+                      ? `${profile.allocation.status.replaceAll('_', ' ')} · ${profile.allocation.committee.code} — ${profile.allocation.committee.name} · ${profile.allocation.portfolio.name}`
+                      : 'Not allocated'}
+                    long
+                  />
+                  {profile.allocation && (
+                    <>
+                      <ProfileField label="Allocated by" value={profile.allocation.assignedBy.fullName} />
+                      <ProfileField label="Allocation assigned" value={formatProfileDate(profile.allocation.assignedAt)} />
+                      <ProfileField label="Allocation last updated" value={formatProfileDate(profile.allocation.updatedAt)} />
+                    </>
+                  )}
+                </dl>
+              </section>
+            </>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+};
+
 interface AdminApplicationRowProps {
   application: AdminApplication;
   committees: CommitteeOption[];
   onChanged: () => void;
+  onOpenProfile: (applicationId: string) => void;
 }
 
-const AdminApplicationRow: React.FC<AdminApplicationRowProps> = ({ application, committees, onChanged }) => {
+const AdminApplicationRow: React.FC<AdminApplicationRowProps> = ({ application, committees, onChanged, onOpenProfile }) => {
   const [status, setStatus] = useState(application.status);
   const [committeeCode, setCommitteeCode] = useState(application.allocation?.committee.code ?? '');
   const [portfolioId, setPortfolioId] = useState(application.allocation?.portfolio.id ?? '');
@@ -36,7 +278,14 @@ const AdminApplicationRow: React.FC<AdminApplicationRowProps> = ({ application, 
     <tr>
       <td>
         <strong>{application.reference}</strong>
-        <span>{application.fullName}</span>
+        <button
+          type="button"
+          className="admin-delegate-name"
+          onClick={() => onOpenProfile(application.id)}
+          aria-label={`View complete profile for ${application.fullName}`}
+        >
+          {application.fullName}
+        </button>
         <span>{application.email}</span>
       </td>
       <td>{application.institution}</td>
@@ -93,6 +342,7 @@ export const AdminPanel: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [reloadCounter, setReloadCounter] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -208,7 +458,13 @@ export const AdminPanel: React.FC = () => {
           </thead>
           <tbody>
             {applications.map((application) => (
-              <AdminApplicationRow key={application.id} application={application} committees={committees} onChanged={refresh} />
+              <AdminApplicationRow
+                key={application.id}
+                application={application}
+                committees={committees}
+                onChanged={refresh}
+                onOpenProfile={setSelectedApplicationId}
+              />
             ))}
           </tbody>
         </table>
@@ -222,6 +478,13 @@ export const AdminPanel: React.FC = () => {
           <button type="button" disabled={page >= totalPages || isLoading} onClick={() => setPage((current) => current + 1)}>Next</button>
         </div>
       </div>
+      {selectedApplicationId && (
+        <DelegateProfileDialog
+          key={selectedApplicationId}
+          applicationId={selectedApplicationId}
+          onClose={() => setSelectedApplicationId(null)}
+        />
+      )}
     </section>
   );
 };

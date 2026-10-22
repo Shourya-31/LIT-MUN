@@ -30,4 +30,4 @@ ENV STATIC_DIR=public
 
 EXPOSE 9090
 
-CMD ["sh", "-c", "npm run db:deploy && npm start"]
+CMD ["sh", "-c", "npm run db:deploy && npm run db:seed && npm start"]

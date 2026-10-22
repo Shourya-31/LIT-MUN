@@ -29,14 +29,14 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
   const [category, setCategory] = useState<ScheduleCategory | 'all'>('all');
   const [expandedByDay, setExpandedByDay] = useState<Record<string, Record<string, boolean>>>({});
   const day = days.find((item) => item.id === selectedId) ?? days[0];
-  const isJourney = day?.kind === 'journey';
+  const isItinerary = day?.kind === 'itinerary';
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const daysRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
   const timelineRef = useRef<HTMLOListElement>(null);
   const previousPositions = useRef(new Map<string, number>());
   const hasUnconfirmedDetails = day?.events.some((event) => !event.startTime || !event.endTime || !event.venue);
-  const visibleEvents = day?.events.filter((event) => isJourney || category === 'all' || event.category === category) ?? [];
+  const visibleEvents = day?.events.filter((event) => isItinerary || category === 'all' || event.category === category) ?? [];
   const sectionRef = useScrollEntrance<HTMLElement>(`${day?.id ?? ''}-${category}`);
 
   useLayoutEffect(() => {
@@ -125,15 +125,15 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
     <section ref={sectionRef} id="schedule" className="conference-section schedule-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
         <div data-entrance="heading">
-          <SectionHeading id={`${uid}-heading`} number="01" eyebrow={isJourney ? 'The delegate journey' : 'The conference programme'}
+          <SectionHeading id={`${uid}-heading`} number="01" eyebrow="The conference programme"
             title={<>Conference <em>Schedule</em></>}
-            description="From registration and research to deliberation, negotiation, and reflection. Explore the stages of your Model United Nations experience at NIT Raipur." />
+            description="Follow the full conference itinerary, from the opening ceremony through committee sessions and breaks to the closing ceremony." />
         </div>
 
         {day ? (
-          <div className={`schedule-programme${isJourney ? ' schedule-programme--journey' : ''}`}>
-            {isJourney && <ScheduleWave />}
-            {!isJourney && <div ref={daysRef} className="schedule-days" role="tablist" aria-label="Conference days" aria-orientation="horizontal">
+          <div className={`schedule-programme${isItinerary ? ' schedule-programme--itinerary' : ''}`}>
+            {isItinerary && <ScheduleWave />}
+            {!isItinerary && <div ref={daysRef} className="schedule-days" role="tablist" aria-label="Conference days" aria-orientation="horizontal">
               {days.map((item, index) => (
                 <button key={item.id} ref={(node) => { tabRefs.current[index] = node; }} type="button"
                   role="tab" id={`${uid}-tab-${item.id}`} aria-selected={day.id === item.id}
@@ -147,21 +147,21 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
               <span ref={indicatorRef} className="schedule-day-indicator" aria-hidden="true" />
             </div>}
 
-            <div key={day.id} id={`${uid}-panel`} role={isJourney ? 'region' : 'tabpanel'} aria-labelledby={isJourney ? `${uid}-panel-title` : `${uid}-tab-${day.id}`} tabIndex={isJourney ? undefined : 0} className="schedule-panel">
+            <div key={day.id} id={`${uid}-panel`} role={isItinerary ? 'region' : 'tabpanel'} aria-labelledby={isItinerary ? `${uid}-panel-title` : `${uid}-tab-${day.id}`} tabIndex={isItinerary ? undefined : 0} className="schedule-panel">
               <div className="schedule-panel-heading">
                 <h3 id={`${uid}-panel-title`}>{day.subtitle}</h3>
-                <p role="status" aria-live="polite" aria-atomic="true">{isJourney ? `${day.events.length} ${day.events.length === 1 ? 'step' : 'steps'}` : <>{category === 'all' ? day.events.length : `${visibleEvents.length} of ${day.events.length}`} {day.isPreview ? 'proposed ' : ''}{day.events.length === 1 ? 'session' : 'sessions'}</>}</p>
+                <p role="status" aria-live="polite" aria-atomic="true">{isItinerary ? `${day.events.length} programme ${day.events.length === 1 ? 'item' : 'items'}` : <>{category === 'all' ? day.events.length : `${visibleEvents.length} of ${day.events.length}`} {day.isPreview ? 'proposed ' : ''}{day.events.length === 1 ? 'session' : 'sessions'}</>}</p>
               </div>
 
               {(day.isPreview || hasUnconfirmedDetails) && (
                 <div className="schedule-note">
                   <CalendarDays size={16} aria-hidden="true" />
-                  <p>{isJourney ? 'This is the delegate journey. Conference dates, session timings, and venues will be published once confirmed.' : <>{day.isPreview ? 'Illustrative programme. Dates and sessions await confirmation. ' : ''}TBA means details are still to be announced.</>}</p>
+                  <p>{isItinerary ? 'Timings and venues are yet to be disclosed.' : <>{day.isPreview ? 'Illustrative programme. Dates and sessions await confirmation. ' : ''}TBA means details are still to be announced.</>}</p>
                 </div>
               )}
 
               {day.events.length > 0 && <div className="schedule-controls">
-                {!isJourney && <div className="schedule-filters" role="group" aria-label="Filter sessions by category">
+                {!isItinerary && <div className="schedule-filters" role="group" aria-label="Filter sessions by category">
                   {filters.map((filter) => {
                     const count = filter.value === 'all' ? day.events.length : day.events.filter((event) => event.category === filter.value).length;
                     return <button key={filter.value} type="button" data-category={filter.value}
@@ -178,7 +178,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
               </div>}
 
               {visibleEvents.length ? <>
-                <div className="schedule-column-headings" aria-hidden="true"><span>{isJourney ? 'Step' : 'Time'}</span><span>{isJourney ? 'Your delegate journey' : 'Sessions & venues'}</span></div>
+                <div className="schedule-column-headings" aria-hidden="true"><span>Time</span><span>{isItinerary ? 'Conference itinerary' : 'Sessions & venues'}</span></div>
                 <ol ref={timelineRef} id={`${uid}-timeline`} className="schedule-timeline">
                   {visibleEvents.map((event, index) => {
                     const { icon: Icon, label } = categories[event.category];
@@ -188,13 +188,13 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                     return (
                       <li key={event.id} data-session-id={event.id} data-entrance="session" style={{ '--session-delay': `${Math.min(index, 3) * 90}ms` } as CSSProperties}
                         className={`schedule-event schedule-event--${event.category}${expanded ? ' is-expanded' : ''}`}>
-                        <div className="schedule-event-time" data-unconfirmed={!isJourney && !event.startTime} role="group" aria-label={isJourney ? `Step ${event.step}: ${event.title}` : `${event.title} timing`}>
-                          <span className="schedule-start-time">{isJourney ? String(event.step ?? index + 1).padStart(2, '0') : event.startTime || 'TBA'}</span>
-                          {(event.startTime || event.endTime) && <span className="schedule-end-time">to {event.endTime || 'TBA'}</span>}
+                        <div className="schedule-event-time" data-unconfirmed={!event.startTime} role="group" aria-label={`${event.title} timing`}>
+                          <span className="schedule-start-time">{event.startTime || (isItinerary ? 'Yet to be disclosed' : 'TBA')}</span>
+                          {(event.startTime || event.endTime) && <span className="schedule-end-time">to {event.endTime || (isItinerary ? 'Yet to be disclosed' : 'TBA')}</span>}
                         </div>
                         <span className="schedule-marker" aria-hidden="true"><Icon size={15} /></span>
                         <article className="schedule-event-content">
-                          {!isJourney && <p className="schedule-category">{label}</p>}
+                          {!isItinerary && <p className="schedule-category">{label}</p>}
                           <h4 className="schedule-event-title">
                             <button type="button" id={triggerId} className="schedule-session-toggle" aria-expanded={expanded}
                               aria-controls={detailsId} aria-label={`${expanded ? 'Hide' : 'Show'} details for ${event.title}`} onClick={() => toggleEvent(event.id)}>
@@ -202,7 +202,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
                               <span className="schedule-session-action" aria-hidden="true"><span>{expanded ? 'Hide details' : 'View details'}</span><ChevronDown size={18} className={expanded ? 'is-open' : ''} /></span>
                             </button>
                           </h4>
-                          {!isJourney && <p className="schedule-event-venue"><MapPin size={14} aria-hidden="true" /><span className="conference-sr-only">Venue: </span>{event.venue || 'TBA'}</p>}
+                          {(!isItinerary || event.venue) && <p className="schedule-event-venue"><MapPin size={14} aria-hidden="true" /><span className="conference-sr-only">Venue: </span>{event.venue || 'TBA'}</p>}
                           <div id={detailsId} className="schedule-event-details" role="region" aria-labelledby={triggerId} aria-hidden={!expanded} data-expanded={expanded}>
                             <div className="schedule-event-details-inner"><p className="schedule-event-description">{event.description}</p></div>
                           </div>
@@ -216,7 +216,7 @@ export default function Schedule({ days = scheduleDays }: ScheduleProps) {
               ) : <div className="conference-empty"><CalendarDays size={32} aria-hidden="true" /><h4>Sessions to be announced</h4><p>The programme for this day will appear here once it is available.</p></div>}
             </div>
 
-            <div className="schedule-footer"><a className="conference-text-button" href="#resources">Explore delegate resources <ArrowUpRight size={16} aria-hidden="true" /></a></div>
+            <div className="schedule-footer"><a className="conference-text-button" href="#secretariat">Meet the Secretariat <ArrowUpRight size={16} aria-hidden="true" /></a></div>
           </div>
         ) : <div className="conference-empty"><CalendarDays size={32} aria-hidden="true" /><h3>Programme to be announced</h3><p>The conference schedule will be shared here once confirmed.</p></div>}
       </div>

@@ -1,6 +1,6 @@
 .schedule-section { background: var(--navy); border-top: 1px solid var(--border-subtle); }
 .schedule-programme { --schedule-time-width: 130px; --schedule-column-gap: 20px; --schedule-marker-offset: 44px; overflow: hidden; background: #0d233e; border: 1px solid var(--border-active); border-radius: 5px; }
-.schedule-programme--journey { --schedule-time-width: 64px; }
+.schedule-programme--itinerary .schedule-event-time[data-unconfirmed='true'] .schedule-start-time { font-size: 0.75rem; line-height: 1.6; letter-spacing: 0; }
 .schedule-wave { height: 64px; overflow: hidden; color: var(--gold); border-bottom: 1px solid var(--border-subtle); contain: paint; pointer-events: none; }
 .schedule-wave-track { display: block; width: 200%; height: 100%; animation: schedule-wave-drift 18s linear infinite; animation-play-state: paused; }
 .schedule-wave[data-animate='true'] .schedule-wave-track { animation-play-state: running; }
@@ -84,7 +84,6 @@
 }
 @media (max-width: 760px) {
   .schedule-programme { --schedule-time-width: 78px; --schedule-column-gap: 14px; }
-  .schedule-programme--journey { --schedule-time-width: 48px; }
   .schedule-days { padding-inline: 24px; gap: 28px; }
   .schedule-panel { padding: 26px 24px 0; }
   .schedule-footer { padding-inline: 24px; }
@@ -95,6 +94,7 @@
 }
 @media (max-width: 480px) {
   .schedule-programme { --schedule-time-width: 52px; --schedule-column-gap: 10px; --schedule-marker-offset: 40px; }
+  .schedule-programme--itinerary { --schedule-time-width: 76px; }
   .schedule-days { padding-inline: 18px; gap: 28px; }
   .schedule-day { min-width: 118px; padding-block: 16px; }
   .schedule-panel { padding: 22px 18px 0; }

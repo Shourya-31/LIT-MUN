@@ -1,6 +1,5 @@
 import { ArrowRight, ArrowUpRight, Mail } from 'lucide-react';
 import { FaInstagram } from 'react-icons/fa';
-import type { MouseEvent } from 'react';
 import crest from '../../assets/NITRRMUN-crest.png';
 import './LandingFooter.css';
 
@@ -12,20 +11,16 @@ const quickLinks = [
   { label: 'FAQs', href: '#faq' },
 ];
 
-const preparationLinks = [
-  { label: 'All delegate resources', href: '#resources' },
-  { label: 'Protocol of deliberation', href: '#resource-rules' },
-  { label: 'Research & representation', href: '#resource-position-papers' },
-  { label: 'Drafting a resolution', href: '#resource-resolutions' },
-  { label: 'Code of conduct', href: '#resource-conference-guidelines' },
+const secretariatLinks = [
+  { label: 'Director General', href: '#secretariat-director-general' },
+  { label: 'Secretary General', href: '#secretariat-secretary-general' },
+  { label: 'Head of EB Affairs', href: '#secretariat-eb-affairs' },
+  { label: 'Head of OC Affairs', href: '#secretariat-oc-affairs' },
+  { label: 'Head of Delegate Affairs', href: '#secretariat-delegate-affairs' },
+  { label: 'OC members & team', href: '#secretariat-team' },
 ];
 
 export default function LandingFooter({ onRegister }: { onRegister?: () => void }) {
-  function openGuide(event: MouseEvent<HTMLAnchorElement>, href: string) {
-    if (!href.startsWith('#resource-') || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    window.dispatchEvent(new CustomEvent('litmun:resource-guide', { detail: href.slice('#resource-'.length) }));
-  }
   return (
     <footer className="landing-footer conference-footer" data-reveal data-reveal-footer>
       <div className="conference-footer-container">
@@ -42,9 +37,9 @@ export default function LandingFooter({ onRegister }: { onRegister?: () => void 
             <h2 id="footer-quick-links">Quick Links</h2>
             <ul>{quickLinks.map((link) => <li key={link.href}><a href={link.href}>{link.label}</a></li>)}</ul>
           </nav>
-          <nav className="footer-column" aria-labelledby="footer-resources">
-            <h2 id="footer-resources">Delegate Resources</h2>
-            <ul>{preparationLinks.map((link) => <li key={link.href}><a href={link.href} onClick={(event) => openGuide(event, link.href)}>{link.label}</a></li>)}</ul>
+          <nav className="footer-column" aria-labelledby="footer-secretariat">
+            <h2 id="footer-secretariat">Secretariat</h2>
+            <ul>{secretariatLinks.map((link) => <li key={link.href}><a href={link.href}>{link.label}</a></li>)}</ul>
           </nav>
           <div className="footer-column footer-connect">
             <h2>Stay Connected</h2>

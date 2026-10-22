@@ -18,7 +18,7 @@ export interface ScheduleDay {
   subtitle: string;
   /** Keep true until the programme has been approved by the organizers. */
   isPreview: boolean;
-  kind?: 'journey';
+  kind?: 'itinerary';
   events: readonly ScheduleEvent[];
 }
 

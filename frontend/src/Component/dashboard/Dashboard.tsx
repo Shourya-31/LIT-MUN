@@ -16,6 +16,7 @@ import {
 import NITRRMUNcrest from '../../assets/NITRRMUN-crest.png';
 import Schedule from '../schedule/Schedule';
 import Gallery from '../gallery/Gallery';
+import Secretariat from '../secretariat/Secretariat';
 import './Dashboard.css';
 
 export interface DelegateDashboardData {
@@ -304,13 +305,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
 
           {activeTab === 'secretariat' && (
-            <div className="tab-secretariat-coming-soon">
-              <div className="coming-soon-card">
-                <h3 className="coming-soon-title">Secretariat & Executive Board</h3>
-                <p className="coming-soon-desc">
-                  The official letters, biographies, and portfolios of the Director General, Secretary General, and Executive Board for NITRRMUN 2026 will be released shortly.
-                </p>
-              </div>
+            <div className="tab-embed-container">
+              <Secretariat />
             </div>
           )}
         </main>

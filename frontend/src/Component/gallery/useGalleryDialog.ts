@@ -30,6 +30,7 @@ export default function useGalleryDialog(onClose: () => void) {
     if (!dialog) return;
     const previousFocus = document.activeElement;
     dialog.showModal();
+    window.dispatchEvent(new Event('litmun:gallery-layer-change'));
     if (openDialogs === 0) previousBodyOverflow = document.body.style.overflow;
     openDialogs += 1;
     document.body.style.overflow = 'hidden';
@@ -39,6 +40,7 @@ export default function useGalleryDialog(onClose: () => void) {
       closingAnimation.current?.cancel();
       closingAnimation.current = null;
       dialog.close();
+      window.dispatchEvent(new Event('litmun:gallery-layer-change'));
       openDialogs -= 1;
       if (openDialogs === 0) {
         document.body.style.overflow = previousBodyOverflow;

@@ -78,7 +78,7 @@ export default function Gallery({ images = galleryImages }: GalleryProps) {
     <section ref={sectionRef} id="gallery" className="conference-section gallery-section" aria-labelledby={`${uid}-heading`}>
       <div className="conference-container">
         <div data-entrance="heading">
-          <SectionHeading id={`${uid}-heading`} number="03" eyebrow="Beyond the debate"
+          <SectionHeading id={`${uid}-heading`} number="04" eyebrow="Beyond the debate"
             title={<>Moments that<br /><em>make the conference.</em></>}
             description="The exchanges, the connections, the shared sense of purpose. NITRRMUN's story, one photograph at a time." />
         </div>

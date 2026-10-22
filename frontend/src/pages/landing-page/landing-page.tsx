@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { Hero, About, Committees, FAQ, Contact } from '../../Component';
 import Schedule from '../../Component/schedule/Schedule';
+import Resources from '../../Component/resources/Resources';
 import Secretariat from '../../Component/secretariat/Secretariat';
 import Gallery from '../../Component/gallery/Gallery';
 import LandingFooter from '../../Component/footer/LandingFooter';
@@ -251,10 +252,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
         <Committees />
       </FadeContent>
       <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
+        <Resources />
+      </FadeContent>
+      <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
         <Schedule />
       </FadeContent>
       <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
-        <Secretariat />
+        <Secretariat resourcesHref="#resources" />
       </FadeContent>
       <FadeContent effect="mist" duration={1.8} ease="power2.out" threshold={0.1}>
         <Gallery />

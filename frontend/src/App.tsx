@@ -4,11 +4,12 @@ import AdminPortal from './Component/admin/AdminPortal';
 import LandingPage from './pages/landing-page/landing-page';
 import RegistrationPage from './pages/registration/RegistrationPage';
 import Dashboard from './Component/dashboard/Dashboard';
+import AnnouncementsPage from './pages/announcements/AnnouncementsPage';
 import { api, type DashboardResponse } from './lib/api';
 import { useAuth } from './contexts/useAuth';
 import './App.css';
 
-type PortalTab = 'landing' | 'registration' | 'signin' | 'signup' | 'dashboard';
+type PortalTab = 'landing' | 'registration' | 'signin' | 'signup' | 'dashboard' | 'announcements';
 
 export const App: React.FC = () => {
   const [pathname, setPathname] = useState(window.location.pathname);
@@ -26,6 +27,9 @@ export const App: React.FC = () => {
       window.history.pushState({}, '', path);
     }
     setPathname(path);
+    if (path === '/announcements') {
+      setActiveTab('announcements');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -127,6 +131,34 @@ export const App: React.FC = () => {
 
   const effectiveTab = activeTab === 'dashboard' && !isAuthLoading && !user ? 'signin' : activeTab;
 
+  if (pathname === '/announcements') {
+    return (
+      <div className="litmun-app">
+        <Navbar
+          activeTab="announcements"
+          onAdministration={() => navigate('/admin/login')}
+          onSelectTab={(tab) => {
+            if (tab === 'dashboard') {
+              navigateToDashboard();
+              return;
+            }
+            if (tab === 'announcements') {
+              navigate('/announcements');
+              return;
+            }
+            setActiveTab(tab);
+            if (tab === 'landing') {
+              navigate('/');
+              return;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+        <AnnouncementsPage />
+      </div>
+    );
+  }
+
   if (pathname === '/admin' || pathname.startsWith('/admin/')) {
     const staff = user?.role === 'ADMIN' || user?.role === 'SECRETARIAT';
     const view = isAuthLoading
@@ -159,6 +191,8 @@ export const App: React.FC = () => {
             onSelectTab={(tab) => {
               if (tab === 'dashboard') {
                 navigateToDashboard();
+              } else if (tab === 'announcements') {
+                navigate('/announcements');
               } else {
                 setActiveTab(tab);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -194,6 +228,7 @@ export const App: React.FC = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onNavigateToDashboard={navigateToDashboard}
+          onNavigateToAnnouncements={() => navigate('/announcements')}
           onAdministration={() => navigate('/admin/login')}
           noticeMessage={authNotice}
           onRegistrationSuccess={handleRegistrationSuccess}

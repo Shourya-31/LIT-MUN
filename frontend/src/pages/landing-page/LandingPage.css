@@ -4,6 +4,71 @@
   background: var(--prussian-blue);
 }
 
+.announcement-popup {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 110;
+  width: min(320px, calc(100vw - 2rem));
+  padding: 0.9rem 0.9rem 0.75rem;
+  border: 1px solid rgba(217, 181, 109, 0.34);
+  border-radius: 18px;
+  background: rgba(9, 26, 48, 0.96);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.announcement-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.7rem;
+  color: var(--soft-fawn);
+  font: 700 0.72rem/1.4 var(--font-subheading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.announcement-popup-close {
+  border: 0;
+  background: transparent;
+  color: var(--lavender-grey);
+  cursor: pointer;
+  font: 600 0.7rem/1.4 var(--font-subheading);
+}
+
+.announcement-popup-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.announcement-popup-trigger strong {
+  color: var(--soft-linen);
+  font: 600 1.05rem/1.4 var(--font-subheading);
+}
+
+.announcement-popup-trigger span,
+.announcement-popup-trigger small {
+  color: var(--lavender-grey);
+  font: 400 0.78rem/1.6 var(--font-body);
+}
+
+.announcement-popup-trigger small {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
 .page-progress {
   position: fixed;
   z-index: 120;

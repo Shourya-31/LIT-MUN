@@ -127,6 +127,17 @@ export interface AdminDelegateProfile extends Omit<AdminApplication, 'reference'
   };
 }
 
+export interface Announcement {
+  id: string;
+  heading: string;
+  subheading: string | null;
+  content: string;
+  isPublished: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AdminStats {
   totalUsers: number;
   totalApplications: number;
@@ -291,6 +302,10 @@ function toApplicationPayload(form: RegistrationFormData) {
 }
 
 export const api = {
+  announcements: {
+    list: () => request<Announcement[]>('/announcements'),
+    get: (id: string) => request<Announcement>(`/announcements/${encodeURIComponent(id)}`),
+  },
   auth: {
     register: (input: {
       fullName: string;
@@ -332,6 +347,19 @@ export const api = {
   },
   admin: {
     stats: () => request<AdminStats>('/admin/dashboard/stats'),
+    announcements: () => request<Announcement[]>('/admin/announcements'),
+    createAnnouncement: (input: { heading: string; subheading?: string; content: string; isPublished?: boolean }) =>
+      request<Announcement>('/admin/announcements', {
+        method: 'POST',
+        body: jsonBody(input),
+      }),
+    updateAnnouncement: (id: string, input: { heading?: string; subheading?: string; content?: string; isPublished?: boolean }) =>
+      request<Announcement>(`/admin/announcements/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: jsonBody(input),
+      }),
+    deleteAnnouncement: (id: string) =>
+      request(`/admin/announcements/${encodeURIComponent(id)}`, { method: 'DELETE' }),
     delegateProfile: (id: string) =>
       request<AdminDelegateProfile>(`/admin/applications/${encodeURIComponent(id)}`),
     applications: (query: { page: number; pageSize: number; q?: string; status?: string }) => {

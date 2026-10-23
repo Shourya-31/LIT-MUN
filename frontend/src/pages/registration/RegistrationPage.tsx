@@ -13,6 +13,7 @@ export interface RegistrationPageProps {
   initialView?: ActivePortalView;
   onNavigateToHome?: () => void;
   onNavigateToDashboard?: () => void;
+  onNavigateToAnnouncements?: () => void;
   onAdministration?: () => void;
   noticeMessage?: string | null;
   onRegistrationSuccess?: (data: RegistrationFormData) => Promise<{ reference: string }>;
@@ -22,6 +23,7 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
   initialView = 'registration',
   onNavigateToHome,
   onNavigateToDashboard,
+  onNavigateToAnnouncements,
   onAdministration,
   noticeMessage,
   onRegistrationSuccess,
@@ -41,6 +43,10 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
           }
           if (tab === 'dashboard') {
             if (onNavigateToDashboard) onNavigateToDashboard();
+            return;
+          }
+          if (tab === 'announcements') {
+            if (onNavigateToAnnouncements) onNavigateToAnnouncements();
             return;
           }
           setActiveView(tab as ActivePortalView);

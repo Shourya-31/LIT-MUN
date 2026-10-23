@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { ApiError, api, type AdminApplication, type AdminDelegateProfile, type AdminStats, type CommitteeOption } from '../../lib/api';
+import { ApiError, api, type AdminApplication, type AdminDelegateProfile, type AdminStats, type Announcement, type CommitteeOption } from '../../lib/api';
 import './AdminPanel.css';
 
 const pageSize = 10;
@@ -246,6 +246,227 @@ const DelegateProfileDialog: React.FC<DelegateProfileDialogProps> = ({ applicati
   );
 };
 
+interface AnnouncementFormState {
+  heading: string;
+  subheading: string;
+  content: string;
+  isPublished: boolean;
+}
+
+const emptyAnnouncementForm = (): AnnouncementFormState => ({
+  heading: '',
+  subheading: '',
+  content: '',
+  isPublished: true,
+});
+
+const AnnouncementManager: React.FC = () => {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formState, setFormState] = useState<AnnouncementFormState>(emptyAnnouncementForm());
+  const [isSaving, setIsSaving] = useState(false);
+
+  const loadAnnouncements = async () => {
+    setIsLoading(true);
+    try {
+      const data = await api.admin.announcements();
+      setAnnouncements(data);
+      setError(null);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : 'Unable to load announcements');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadAnnouncements();
+  }, []);
+
+  const handleFieldChange = (field: keyof AnnouncementFormState, value: string | boolean) => {
+    setFormState((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const heading = formState.heading.trim();
+    const content = formState.content.trim();
+    if (!heading || !content) {
+      setError('Heading and content are required.');
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const payload = {
+        heading,
+        subheading: formState.subheading.trim() || undefined,
+        content,
+        isPublished: formState.isPublished,
+      };
+
+      if (editingId) {
+        await api.admin.updateAnnouncement(editingId, payload);
+        setNotice('Announcement updated successfully.');
+      } else {
+        await api.admin.createAnnouncement(payload);
+        setNotice('Announcement created successfully.');
+      }
+
+      setFormState(emptyAnnouncementForm());
+      setEditingId(null);
+      await loadAnnouncements();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Unable to save this announcement');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleEdit = (announcement: Announcement) => {
+    setEditingId(announcement.id);
+    setFormState({
+      heading: announcement.heading,
+      subheading: announcement.subheading ?? '',
+      content: announcement.content,
+      isPublished: announcement.isPublished,
+    });
+    setError(null);
+    setNotice(null);
+  };
+
+  const handleDelete = async (announcementId: string) => {
+    if (!window.confirm('Delete this announcement from the public site and admin list?')) {
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    setNotice(null);
+    try {
+      await api.admin.deleteAnnouncement(announcementId);
+      setNotice('Announcement deleted.');
+      if (editingId === announcementId) {
+        setEditingId(null);
+        setFormState(emptyAnnouncementForm());
+      }
+      await loadAnnouncements();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete this announcement');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <section className="admin-announcements" aria-labelledby="admin-announcements-heading">
+      <div className="admin-panel-heading">
+        <div>
+          <h3 id="admin-announcements-heading">Announcements</h3>
+          <p>Official notices and updates for public visitors.</p>
+        </div>
+        <button
+          type="button"
+          className="admin-announcements-create"
+          onClick={() => {
+            setEditingId(null);
+            setFormState(emptyAnnouncementForm());
+            setError(null);
+            setNotice(null);
+          }}
+        >
+          {editingId ? 'Cancel edit' : 'Create Announcement'}
+        </button>
+      </div>
+
+      {notice && <p className="admin-success" role="status">{notice}</p>}
+      {error && <p className="admin-error" role="alert">{error}</p>}
+
+      <form className="announcement-form" onSubmit={handleSubmit}>
+        <label>
+          Heading
+          <input
+            value={formState.heading}
+            onChange={(event) => handleFieldChange('heading', event.target.value)}
+            placeholder="Conference update"
+            maxLength={200}
+            disabled={isSaving}
+          />
+        </label>
+
+        <label>
+          Subheading
+          <input
+            value={formState.subheading}
+            onChange={(event) => handleFieldChange('subheading', event.target.value)}
+            placeholder="Optional secondary heading"
+            maxLength={300}
+            disabled={isSaving}
+          />
+        </label>
+
+        <label>
+          Content
+          <textarea
+            value={formState.content}
+            onChange={(event) => handleFieldChange('content', event.target.value)}
+            rows={7}
+            placeholder="Write the full announcement body…"
+            disabled={isSaving}
+          />
+        </label>
+
+        <label className="announcement-form-toggle">
+          <input
+            type="checkbox"
+            checked={formState.isPublished}
+            onChange={(event) => handleFieldChange('isPublished', event.target.checked)}
+            disabled={isSaving}
+          />
+          Publish immediately
+        </label>
+
+        <div className="announcement-form-actions">
+          <button type="submit" disabled={isSaving}>
+            {isSaving ? (editingId ? 'Saving…' : 'Creating…') : (editingId ? 'Save changes' : 'Create announcement')}
+          </button>
+        </div>
+      </form>
+
+      <div className="announcement-admin-list">
+        {isLoading && <p className="admin-table-message" role="status">Loading announcements…</p>}
+        {!isLoading && announcements.length === 0 && (
+          <p className="admin-table-message">No announcements yet. Create the first official notice.</p>
+        )}
+        {!isLoading && announcements.map((announcement) => (
+          <article key={announcement.id} className="announcement-admin-card">
+            <div>
+              <span className={`announcement-status ${announcement.isPublished ? 'published' : 'draft'}`}>
+                {announcement.isPublished ? 'Published' : 'Draft'}
+              </span>
+              <h4>{announcement.heading}</h4>
+              {announcement.subheading && <p>{announcement.subheading}</p>}
+            </div>
+            <div className="announcement-admin-meta">
+              <span>{new Date(announcement.publishedAt ?? announcement.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+              <div className="announcement-admin-actions">
+                <button type="button" onClick={() => handleEdit(announcement)} disabled={isSaving}>Edit</button>
+                <button type="button" className="danger" onClick={() => void handleDelete(announcement.id)} disabled={isSaving}>Delete</button>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 interface AdminApplicationRowProps {
   application: AdminApplication;
   committees: CommitteeOption[];
@@ -421,6 +642,8 @@ export const AdminPanel: React.FC = () => {
           </div>
         ))}
       </div>
+
+      <AnnouncementManager />
 
       <form className="admin-filters" onSubmit={(event) => {
         event.preventDefault();

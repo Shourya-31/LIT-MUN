@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -10,6 +10,7 @@ import Secretariat from '../../Component/secretariat/Secretariat';
 import Gallery from '../../Component/gallery/Gallery';
 import LandingFooter from '../../Component/footer/LandingFooter';
 import FadeContent from '../../Component/animations/FadeContent';
+import { api, type Announcement } from '../../lib/api';
 import './LandingPage.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -21,6 +22,67 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistration }) => {
   const pageRef = useRef<HTMLElement>(null);
   const progressRef = useRef<HTMLSpanElement>(null);
+  const [popupAnnouncement, setPopupAnnouncement] = useState<Announcement | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const readSeenIds = (): Set<string> => {
+      try {
+        const raw = window.localStorage.getItem('litmun-announcements-seen');
+        if (!raw) return new Set();
+        const parsed = JSON.parse(raw) as unknown;
+        return new Set(Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : []);
+      } catch {
+        return new Set();
+      }
+    };
+
+    void api.announcements.list()
+      .then((announcements) => {
+        if (!active) return;
+        const unseen = announcements.find((announcement) => !readSeenIds().has(announcement.id));
+        if (unseen) {
+          setPopupAnnouncement(unseen);
+        }
+      })
+      .catch(() => {
+        if (active) setPopupAnnouncement(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const markAnnouncementSeen = (announcementId: string) => {
+    try {
+      const raw = window.localStorage.getItem('litmun-announcements-seen');
+      const seenIds = new Set(raw ? JSON.parse(raw) as string[] : []);
+      seenIds.add(announcementId);
+      window.localStorage.setItem('litmun-announcements-seen', JSON.stringify(Array.from(seenIds)));
+    } catch {
+      // ignore storage failures gracefully
+    }
+  };
+
+  const handleOpenAnnouncement = (announcementId: string) => {
+    markAnnouncementSeen(announcementId);
+    const nextUrl = `/announcements#${announcementId}`;
+    if (window.location.pathname === '/announcements') {
+      window.history.replaceState({}, '', nextUrl);
+      window.dispatchEvent(new Event('hashchange'));
+    } else {
+      window.history.pushState({}, '', nextUrl);
+      window.dispatchEvent(new Event('popstate'));
+    }
+    setPopupAnnouncement(null);
+  };
+
+  const handleDismissAnnouncement = (announcementId: string) => {
+    markAnnouncementSeen(announcementId);
+    setPopupAnnouncement(null);
+  };
 
   useGSAP(() => {
     const page = pageRef.current;
@@ -241,6 +303,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToRegistrati
 
   return (
     <main className="litmun-home-preview" ref={pageRef}>
+      {popupAnnouncement && (
+        <aside className="announcement-popup" aria-live="polite">
+          <div className="announcement-popup-header">
+            <span>New announcement</span>
+            <button type="button" className="announcement-popup-close" aria-label="Dismiss announcement" onClick={() => handleDismissAnnouncement(popupAnnouncement.id)}>
+              Dismiss
+            </button>
+          </div>
+          <button type="button" className="announcement-popup-trigger" onClick={() => handleOpenAnnouncement(popupAnnouncement.id)}>
+            <strong>{popupAnnouncement.heading}</strong>
+            {popupAnnouncement.subheading && <span>{popupAnnouncement.subheading}</span>}
+            <small>{popupAnnouncement.content.slice(0, 140)}{popupAnnouncement.content.length > 140 ? '…' : ''}</small>
+          </button>
+        </aside>
+      )}
       <div className="page-progress" aria-hidden="true">
         <span ref={progressRef} />
       </div>

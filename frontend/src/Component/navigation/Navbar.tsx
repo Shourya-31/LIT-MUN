@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/useAuth';
 import './Navbar.css';
 import NITRRMUNcrest from '../../assets/NITRRMUN-crest.png';
 
-type PortalTab = 'landing' | 'registration' | 'signin' | 'signup' | 'dashboard';
+type PortalTab = 'landing' | 'registration' | 'signin' | 'signup' | 'dashboard' | 'announcements';
 
 export interface NavbarProps {
   activeTab: PortalTab;
@@ -16,6 +16,7 @@ export interface NavbarProps {
 
 const publicNavItems: { label: string; tab: PortalTab }[] = [
   { label: 'Home', tab: 'landing' },
+  { label: 'Announcements', tab: 'announcements' },
   { label: 'Dashboard', tab: 'dashboard' },
 ];
 

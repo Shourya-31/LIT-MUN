@@ -16,6 +16,7 @@ import { prisma } from './plugins/prisma.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { applicationRoutes } from './modules/applications/applications.routes.js';
 import { adminRoutes } from './modules/admin/admin.routes.js';
+import { announcementRoutes } from './modules/announcements/announcements.routes.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -85,6 +86,7 @@ export async function buildApp(): Promise<FastifyInstance> {
         { name: 'health', description: 'Service availability' },
         { name: 'auth', description: 'Account and session operations' },
         { name: 'applications', description: 'Delegate applications and preferences' },
+        { name: 'announcements', description: 'Public and administrative announcements' },
         { name: 'admin', description: 'Restricted application management' },
       ],
       components: {
@@ -169,6 +171,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(applicationRoutes, { prefix: '/api/v1' });
+  await app.register(announcementRoutes, { prefix: '/api/v1' });
   await app.register(adminRoutes, { prefix: '/api/v1/admin' });
 
   app.get('/', {

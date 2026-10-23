@@ -46,14 +46,20 @@
 }
 
 .conference-specs-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  max-width: 640px;
+  margin: 24px auto 0;
   text-align: left;
 }
 
 .spec-card {
+  flex: 1 1 260px;
+  max-width: 300px;
   background-color: var(--deep-space-blue);
   border-radius: 6px;
   padding: 18px 20px;
@@ -86,18 +92,14 @@
 }
 
 @media (max-width: 860px) {
-  .conference-specs-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .portal-headline {
     font-size: 2.2rem;
   }
 }
 
 @media (max-width: 520px) {
-  .conference-specs-grid {
-    grid-template-columns: 1fr;
+  .spec-card {
+    max-width: 100%;
   }
 }
 

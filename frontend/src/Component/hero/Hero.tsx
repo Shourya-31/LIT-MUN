@@ -18,7 +18,7 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLSpanElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  const visualRef = useRef<HTMLElement>(null);
   const aboutButtonRef = useMagneticPointer<HTMLAnchorElement>(0.07);
   const spotlightFrameRef = useRef<number | null>(null);
   const spotlightPositionRef = useRef({ x: 0, y: 0 });
@@ -46,8 +46,8 @@ export const Hero: React.FC<HeroProps> = () => {
 
   useGSAP(() => {
     const title = titleRef.current;
-    const image = imageRef.current;
-    if (!title || !image || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const visual = visualRef.current;
+    if (!title || !visual || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }
 
@@ -81,23 +81,30 @@ export const Hero: React.FC<HeroProps> = () => {
         '-=0.75',
       )
       .fromTo(
-        image,
+        visual,
         {
           autoAlpha: 0,
           scale: 1.035,
-          clipPath: 'polygon(0 0, 0 0, 0 0, 0 0, 0 100%, 0 8%)',
         },
         {
           autoAlpha: 1,
           scale: 1,
-          clipPath: 'polygon(5% 0, 100% 0, 100% 90%, 94% 100%, 0 100%, 0 8%)',
           duration: 1.1,
         },
         '-=0.75',
+      )
+      .fromTo(
+        '.hero-image',
+        { clipPath: 'polygon(0 0, 0 0, 0 0, 0 0, 0 100%, 0 8%)' },
+        {
+          clipPath: 'polygon(5% 0, 100% 0, 100% 90%, 94% 100%, 0 100%, 0 8%)',
+          duration: 1.1,
+        },
+        '<',
       );
 
     motionMedia.add('(min-width: 761px) and (hover: hover) and (pointer: fine)', () => {
-      gsap.to(image, {
+      gsap.to(visual, {
         yPercent: 5,
         ease: 'none',
         scrollTrigger: {
@@ -168,7 +175,11 @@ export const Hero: React.FC<HeroProps> = () => {
       <div className="hero-layout">
         <div className="hero-copy">
           <p className="hero-eyebrow" data-hero-eyebrow>
-            NITRRMUN 2026–27  NIT Raipur
+            <span>
+              <span className="hero-presenter">Literati presents</span>
+              <br />
+              NITRRMUN 2026–27  NIT Raipur
+            </span>
           </p>
 
           <h1 className="hero-title" id="hero-title" aria-label="Model United Nations">
@@ -193,9 +204,8 @@ export const Hero: React.FC<HeroProps> = () => {
           </div>
         </div>
 
-        <figure className="hero-visual">
+        <figure ref={visualRef} className="hero-visual">
           <img
-            ref={imageRef}
             className="hero-image"
             src={NITRRMUNdark}
             alt="Official NITRRMUN Global Emblem"

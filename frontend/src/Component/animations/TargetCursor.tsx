@@ -356,7 +356,7 @@ const TargetCursor = ({
     };
 
     const updateCursorLayer = () => {
-      const galleryOpen = Boolean(document.querySelector('.gallery-overview[open], .gallery-lightbox[open]'));
+      const dialogOpen = Boolean(document.querySelector('dialog[open]'));
       let inTopLayer = false;
       // A manual popover paints above native dialogs without taking focus or
       // intercepting clicks. Reopen it when a nested dialog changes that order.
@@ -370,8 +370,8 @@ const TargetCursor = ({
           root.removeAttribute('popover');
         }
       }
-      // Older browsers retain a visible native pointer inside gallery dialogs.
-      blockedByDialog = galleryOpen && !inTopLayer;
+      // Older browsers retain a visible native pointer inside dialogs.
+      blockedByDialog = dialogOpen && !inTopLayer;
       root.hidden = blockedByDialog;
       pointer.pressed = false;
       if (blockedByDialog) {
@@ -396,6 +396,7 @@ const TargetCursor = ({
     document.documentElement.addEventListener('pointerleave', onLeave);
     window.addEventListener('blur', onLeave);
     window.addEventListener('litmun:gallery-layer-change', updateCursorLayer);
+    window.addEventListener('litmun:dialog-layer-change', updateCursorLayer);
     updateCursorLayer();
 
     return () => {
@@ -408,6 +409,7 @@ const TargetCursor = ({
       document.documentElement.removeEventListener('pointerleave', onLeave);
       window.removeEventListener('blur', onLeave);
       window.removeEventListener('litmun:gallery-layer-change', updateCursorLayer);
+      window.removeEventListener('litmun:dialog-layer-change', updateCursorLayer);
       lastScope?.removeAttribute('data-target-cursor-scope');
       style.remove();
       try {

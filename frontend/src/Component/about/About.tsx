@@ -28,7 +28,7 @@ export const About: React.FC = () => {
 
           <div className="about-copy">
             <p className="about-paragraph" data-about-paragraph>
-              <span className="about-highlight">NITRRMUN 2026–27</span> brings you an inspiring platform where diplomacy converges with youthful leadership at <span className="about-highlight">NIT Raipur</span>. Stepping into the theater of international affairs, NITRRMUN invites students to engage in rigorous discourse, analyze multifaceted geopolitical issues, and forge collaborative policies alongside visionary peers.
+              <span className="about-highlight">Literati</span> presents <span className="about-highlight">NITRRMUN 2026–27</span> which brings you an inspiring platform where diplomacy converges with youthful leadership at <span className="about-highlight">NIT Raipur</span>. Stepping into the theater of international affairs, NITRRMUN invites students to engage in rigorous discourse, analyze multifaceted geopolitical issues, and forge collaborative policies alongside visionary peers.
             </p>
 
             <p className="about-paragraph" data-about-paragraph>

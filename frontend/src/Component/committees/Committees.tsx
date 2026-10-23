@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronDown, Calendar, FileText } from 'lucide-react';
+import { ChevronDown, Calendar, FileText, List, X } from 'lucide-react';
 import { committeesData, type Committee } from './committeesData';
 import './Committees.css';
 
@@ -8,8 +9,74 @@ export interface CommitteesProps {
   committees?: Committee[];
 }
 
+const CommitteeListDialog: React.FC<{ committee: Committee; onClose: () => void }> = ({ committee, onClose }) => {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const isPartyList = committee.code === 'AIPPM';
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
+    window.dispatchEvent(new Event('litmun:dialog-layer-change'));
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      dialog.close();
+      window.dispatchEvent(new Event('litmun:dialog-layer-change'));
+      document.body.style.overflow = previousOverflow;
+      opener?.focus({ preventScroll: true });
+    };
+  }, []);
+
+  return createPortal(
+    <dialog
+      ref={dialogRef}
+      id={`committee-list-${committee.id}`}
+      className="committee-list-dialog"
+      aria-labelledby="committee-list-title"
+      aria-describedby="committee-list-description"
+      data-lenis-prevent
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+          onClose();
+        }
+      }}
+    >
+      <header className="committee-list-header">
+        <div>
+          <h3 id="committee-list-title">{committee.code} {isPartyList ? 'party list' : 'country list'}</h3>
+          <p id="committee-list-description">
+            {committee.name} · {committee.portfolios.length} {isPartyList ? 'delegate portfolios' : 'countries'}
+          </p>
+        </div>
+        <button type="button" className="committee-list-close" onClick={onClose} aria-label="Close list" autoFocus>
+          <X size={20} aria-hidden="true" />
+        </button>
+      </header>
+      <ol className="committee-list-entries">
+        {committee.portfolios.map((portfolio, index) => (
+          <li key={portfolio}>
+            <span className="committee-list-number" aria-hidden="true">{index + 1}.</span>
+            <span>{portfolio}</span>
+          </li>
+        ))}
+      </ol>
+    </dialog>,
+    document.body,
+  );
+};
+
 export const Committees: React.FC<CommitteesProps> = ({ committees = committeesData }) => {
   const [openAgendas, setOpenAgendas] = useState<Record<string, boolean>>({});
+  const [selectedCommittee, setSelectedCommittee] = useState<Committee | null>(null);
   const reduceMotion = useReducedMotion() === true;
 
   const toggleAgenda = (id: string) => {
@@ -124,11 +191,23 @@ export const Committees: React.FC<CommitteesProps> = ({ committees = committeesD
                     )}
                   </AnimatePresence>
                 </div>
+                <button
+                  type="button"
+                  className="committee-list-btn"
+                  aria-haspopup="dialog"
+                  onClick={() => setSelectedCommittee(committee)}
+                >
+                  <List size={14} aria-hidden="true" />
+                  Open {committee.code === 'AIPPM' ? 'party' : 'country'} list
+                </button>
               </article>
             );
           })}
         </div>
       </div>
+      {selectedCommittee && (
+        <CommitteeListDialog committee={selectedCommittee} onClose={() => setSelectedCommittee(null)} />
+      )}
     </section>
   );
 };

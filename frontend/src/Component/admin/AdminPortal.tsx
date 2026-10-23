@@ -40,7 +40,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ view, onNavigate, onLo
         >
           <img src={NITRRMUNcrest} alt="" />
           <span>
-            <strong>LIT-MUN</strong>
+            <strong>NITRRMUN</strong>
             <small>Administration Portal</small>
           </span>
         </button>

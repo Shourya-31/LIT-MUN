@@ -1071,7 +1071,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     onChange={(e) => updateField('agreedToTerms', e.target.checked)}
                   />
                   <span>
-                    I confirm that the information submitted is accurate and binding. I agree to abide by the LIT-MUN Rules of Procedure, conference decorum, and code of conduct.
+                    I confirm that the information submitted is accurate and binding. I agree to abide by the NITRRMUN Rules of Procedure, conference decorum, and code of conduct.
                   </span>
                 </label>
               </div>
@@ -1138,7 +1138,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     Available Countries & Portfolios Matrix
                   </h3>
                   <p className="modal-sub">
-                    Reference list of countries and political portfolios available for LIT-MUN 2026.
+                    Reference list of countries and political portfolios available for NITRRMUN 2026.
                   </p>
                 </div>
               </div>

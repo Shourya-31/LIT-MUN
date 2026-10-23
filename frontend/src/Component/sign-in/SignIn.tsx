@@ -141,7 +141,7 @@ export const SignIn: React.FC<SignInProps> = ({
         <div className="signin-card">
           <h2 className="signin-title">Access Granted</h2>
           <p className="signin-message">
-            Welcome back to the LIT-MUN Delegate Portal. Your credentials have been authenticated.
+            Welcome back to the NITRRMUN Delegate Portal. Your credentials have been authenticated.
           </p>
           <div className="signin-session-info">
             <span className="signin-session-label">Authenticated Account:</span>

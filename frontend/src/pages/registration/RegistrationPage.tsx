@@ -57,23 +57,19 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
       <main className="portal-main">
         <section className="portal-hero">
           <div className="portal-hero-content">
-            <h1 className="portal-headline">LIT Model United Nations 2026</h1>
+            <h1 className="portal-headline">NIT Raipur Model United Nations 2026</h1>
             <p className="portal-lead">
               Official conference registration and delegate portal for diplomatic simulations, committee appointments, and parliamentary procedure.
             </p>
 
             <div className="conference-specs-grid">
               <div className="spec-card">
-                <span className="spec-label">Session Dates</span>
-                <span className="spec-value">October xx to yy, 2026</span>
+                <span className="spec-label">Session Date</span>
+                <span className="spec-value">November 1, 2026</span>
               </div>
               <div className="spec-card">
                 <span className="spec-label">Conference Venue</span>
                 <span className="spec-value">HIRA Hall, NIT Raipur</span>
-              </div>
-              <div className="spec-card">
-                <span className="spec-label">Registration Closes</span>
-                <span className="spec-value">November xx, 2026</span>
               </div>
             </div>
           </div>
@@ -175,7 +171,7 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
       <footer className="portal-footer">
         <div className="footer-container">
           <div className="footer-col">
-            <span className="footer-brand-title">LIT Model United Nations</span>
+            <span className="footer-brand-title">NIT RAIPUR Model United Nations</span>
             <p className="footer-description">
               Organized by the LITERATI (Literary Society, NIT Raipur).
             </p>
@@ -194,7 +190,7 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
         </div>
         <div className="footer-bottom">
           <p className="footer-copy">
-            (c) 2026 LIT Model United Nations Conference. All rights reserved.
+            (c) 2026 NITRRMUN Conference. All rights reserved.
           </p>
         </div>
       </footer>

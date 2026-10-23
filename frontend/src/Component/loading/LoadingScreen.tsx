@@ -7,8 +7,8 @@ import NITRRMUNdark from '../../assets/NITRRMUN-dark.png';
 gsap.registerPlugin(useGSAP);
 
 const emblemUrl = NITRRMUNdark;
-const minimumDisplayTime = 3000;
-const maximumWaitTime = 3100;
+const minimumDisplayTime = 2000;
+const maximumWaitTime = 2500;
 
 interface LoadingScreenProps {
   onComplete: () => void;

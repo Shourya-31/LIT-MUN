@@ -5,6 +5,7 @@ import { SignIn } from '../../Component/sign-in/SignIn';
 import { SignUp } from '../../Component/sign-up/SignUp';
 import type { RegistrationFormData } from '../../Component/registration/RegistrationForm';
 import { useAuth } from '../../contexts/useAuth';
+import DevelopersCredits from '../../Component/footer/DevelopersCredits';
 import './RegistrationPage.css';
 
 export type ActivePortalView = 'registration' | 'signin' | 'signup';
@@ -188,9 +189,12 @@ export const RegistrationPage: React.FC<RegistrationPageProps> = ({
             </p>
           </div>
         </div>
+
+        <DevelopersCredits />
+
         <div className="footer-bottom">
           <p className="footer-copy">
-            (c) 2026 NITRRMUN Conference. All rights reserved.
+            © 2026 NITRRMUN Conference. All rights reserved.
           </p>
         </div>
       </footer>

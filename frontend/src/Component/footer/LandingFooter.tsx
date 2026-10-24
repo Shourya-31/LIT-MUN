@@ -1,5 +1,6 @@
 import { ArrowRight, ArrowUpRight, Mail } from 'lucide-react';
 import { FaInstagram } from 'react-icons/fa';
+import DevelopersCredits from './DevelopersCredits';
 import crest from '../../assets/NITRRMUN-crest.png';
 import './LandingFooter.css';
 
@@ -50,7 +51,13 @@ export default function LandingFooter({ onRegister }: { onRegister?: () => void 
           </div>
         </div>
         <p className="footer-welcome">“For every question that deserves consideration, every perspective that merits a hearing, and every solution that begins with dialogue, team LITERATI welcomes your engagement.”</p>
-        <div className="footer-bottom"><p>© 2026 NITRRMUN Conference, NIT Raipur. All rights reserved.</p><a href="#home">Back to top <ArrowRight size={13} aria-hidden="true" /></a></div>
+        
+        <DevelopersCredits />
+
+        <div className="footer-bottom">
+          <p>© 2026 NITRRMUN Conference, NIT Raipur. All rights reserved.</p>
+          <a href="#home">Back to top <ArrowRight size={13} aria-hidden="true" /></a>
+        </div>
       </div>
     </footer>
   );

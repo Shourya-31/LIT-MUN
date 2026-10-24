@@ -139,9 +139,19 @@
   cursor: pointer;
 }
 
+.signin-link-btn::after,
+.signin-toggle-password::after,
+.signin-inline-link::after {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
+
 .signin-link-btn {
   background: none;
   border: none;
+  outline: none;
+  box-shadow: none;
   color: var(--soft-fawn);
   font-family: var(--font-subheading);
   font-size: 0.82rem;
@@ -165,6 +175,9 @@
   letter-spacing: 0.04em;
   padding: 14px 20px;
   border-radius: 4px;
+  border: none;
+  outline: none;
+  box-shadow: none;
   cursor: pointer;
   transition: background-color var(--transition-smooth);
   margin-top: 6px;
@@ -266,4 +279,5 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+
 }

@@ -316,7 +316,7 @@ export const SignUp: React.FC<SignUpProps> = ({
                 onChange={handleChange}
               />
               <span>
-                I agree to the LIT-MUN Rules of Procedure, conference guidelines, and data processing terms.
+                I agree to the NITRRMUN Rules of Procedure, conference guidelines, and data processing terms.
               </span>
             </label>
           </div>

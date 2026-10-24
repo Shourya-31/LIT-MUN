@@ -151,6 +151,13 @@
   cursor: pointer;
 }
 
+.signup-toggle-password::after,
+.signup-inline-link::after {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
+
 .signup-submit-btn {
   background-color: var(--soft-fawn);
   color: var(--prussian-blue);
@@ -160,6 +167,9 @@
   letter-spacing: 0.04em;
   padding: 14px 20px;
   border-radius: 4px;
+  border: none;
+  outline: none;
+  box-shadow: none;
   cursor: pointer;
   transition: background-color var(--transition-smooth);
   margin-top: 6px;
